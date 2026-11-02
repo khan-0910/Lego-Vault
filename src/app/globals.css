@@ -1,0 +1,516 @@
+@import "tailwindcss";
+
+/* ───────────────────────── BRICKVAULT design tokens ───────────────────────── */
+
+@theme {
+  --color-ink: #2A1F45;
+  --color-ink-soft: #4A3F66;
+  --color-cream: #FFF3E8;
+  --color-paper: #FFFAF4;
+  --color-red: #FF5C6C;
+  --color-red-deep: #D93A55;
+  --color-blue: #4062FF;
+  --color-sky: #62D2FF;
+  --color-purple: #A77BFF;
+  --color-yellow: #FFD447;
+  --color-mint: #7BF1C8;
+  --color-green-deep: #12784a;
+  --color-pink: #FF9FD0;
+  --color-orange: #FF9548;
+
+  --radius-comic: 16px;
+  --ease-snap: cubic-bezier(0.2, 0.9, 0.25, 1.15);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-wiggle: wiggle 0.5s ease-in-out;
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+  --animate-spin-slow: spin 28s linear infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--r, 0deg)); }
+    50% { transform: translate3d(0, -14px, 0) rotate(calc(var(--r, 0deg) + 4deg)); }
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-8deg); }
+    75% { transform: rotate(8deg); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to { background-position: 200% 0; }
+  }
+}
+
+@theme inline {
+  --font-display: var(--font-bungee), var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-dm), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-sfx: var(--font-bangers), var(--font-bricolage), sans-serif;
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    min-height: 100dvh;
+    font-synthesis: none;
+    overflow-x: hidden;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: var(--color-yellow);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-blue);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  button,
+  [role="button"],
+  summary {
+    cursor: pointer;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+  }
+  /* We draw our own clear button on search fields. */
+  input[type="search"]::-webkit-search-cancel-button {
+    appearance: none;
+  }
+}
+
+/* ───────────────────────── Comic components ───────────────────────── */
+
+@layer components {
+  /* Paper texture + halftone, fixed behind everything. */
+  .print-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 12% 8%, rgb(255 92 108 / 0.1), transparent 34%),
+      radial-gradient(circle at 92% 88%, rgb(64 98 255 / 0.1), transparent 36%),
+      radial-gradient(rgb(42 31 69 / 0.075) 1.1px, transparent 1.5px) 0 0 / 14px 14px,
+      var(--color-cream);
+  }
+  .print-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.28;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.14 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .panel {
+    position: relative;
+    background: var(--color-paper);
+    border: 3px solid var(--color-ink);
+    border-radius: var(--radius-comic);
+    box-shadow: 6px 6px 0 0 var(--color-ink);
+  }
+  .panel-flat {
+    position: relative;
+    background: var(--color-paper);
+    border: 3px solid var(--color-ink);
+    border-radius: var(--radius-comic);
+  }
+  .shadow-comic-sm { box-shadow: 3px 3px 0 0 var(--color-ink); }
+  .shadow-comic { box-shadow: 6px 6px 0 0 var(--color-ink); }
+  .shadow-comic-lg { box-shadow: 10px 10px 0 0 var(--color-ink); }
+
+  /* Little sticker label that sits on a panel's top edge. */
+  .label-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1;
+    padding: 0.45rem 0.7rem;
+    border: 3px solid var(--color-ink);
+    border-radius: 10px;
+    background: var(--color-yellow);
+    box-shadow: 3px 3px 0 0 var(--color-ink);
+    transform: rotate(-2deg);
+    white-space: nowrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1;
+    padding: 0.75rem 1.1rem;
+    min-height: 44px;
+    border: 3px solid var(--color-ink);
+    border-radius: 12px;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    box-shadow: 4px 4px 0 0 var(--color-ink);
+    transition: transform 140ms var(--ease-snap), box-shadow 140ms var(--ease-snap), background-color 140ms;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) {
+    transform: translate(-1px, -2px);
+    animation: jelly 0.55s ease-out;
+    box-shadow: 5px 6px 0 0 var(--color-ink);
+  }
+  .btn:active:not(:disabled) {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 0 var(--color-ink);
+    transition-duration: 60ms;
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .btn-red { background: var(--color-red); }
+  .btn-yellow { background: var(--color-yellow); }
+  .btn-blue { background: var(--color-blue); color: var(--color-paper); }
+  .btn-mint { background: var(--color-mint); }
+  .btn-ink { background: var(--color-ink); color: var(--color-yellow); }
+  .btn-ghost {
+    background: transparent;
+    box-shadow: none;
+    border-color: transparent;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: rgb(42 31 69 / 0.06);
+    box-shadow: none;
+    transform: none;
+  }
+  .btn-sm { padding: 0.5rem 0.75rem; font-size: 0.8rem; min-height: 36px; border-radius: 10px; }
+  .btn-lg { padding: 1rem 1.5rem; font-size: 1.1rem; }
+  .btn-icon { padding: 0; width: 44px; height: 44px; }
+  .btn-icon.btn-sm { width: 36px; height: 36px; }
+
+  .input {
+    width: 100%;
+    min-height: 46px;
+    background: #fff;
+    color: var(--color-ink);
+    border: 3px solid var(--color-ink);
+    border-radius: 12px;
+    padding: 0.65rem 0.85rem;
+    font: 500 1rem/1.3 var(--font-sans);
+    transition: box-shadow 140ms, transform 140ms;
+  }
+  .input::placeholder { color: rgb(42 31 69 / 0.42); }
+  .input:focus {
+    outline: none;
+    box-shadow: 4px 4px 0 0 var(--color-blue);
+  }
+  .input[aria-invalid="true"] {
+    border-color: var(--color-red-deep);
+    box-shadow: 4px 4px 0 0 var(--color-red);
+  }
+  select.input {
+    appearance: none;
+    padding-right: 2.4rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23191923' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+  }
+  textarea.input { min-height: 110px; resize: vertical; }
+
+  .field-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 34px;
+    padding: 0.3rem 0.8rem;
+    border: 2.5px solid var(--color-ink);
+    border-radius: 999px;
+    background: var(--color-paper);
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1.1;
+    transition: transform 120ms var(--ease-snap), background-color 120ms;
+  }
+  .chip:hover { transform: translateY(-1px) rotate(-1deg); }
+  .chip[aria-pressed="true"],
+  .chip[aria-checked="true"],
+  .chip[aria-selected="true"] {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .mono-meta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Spider-Verse style misregistered print: red and blue plates slightly off. */
+  .misprint {
+    text-shadow:
+      3px 1px 0 rgb(255 92 108 / 0.9),
+      -3px -1px 0 rgb(64 98 255 / 0.8);
+  }
+  .misprint-sm {
+    text-shadow:
+      2px 0 0 rgb(255 92 108 / 0.85),
+      -2px 0 0 rgb(64 98 255 / 0.75);
+  }
+
+  .stroke-text {
+    color: var(--color-yellow);
+    -webkit-text-stroke: 3px var(--color-ink);
+    paint-order: stroke fill;
+  }
+
+  .sfx {
+    font-family: var(--font-sfx);
+    letter-spacing: 0.04em;
+    color: var(--color-yellow);
+    -webkit-text-stroke: 3px var(--color-ink);
+    paint-order: stroke fill;
+    text-shadow: 4px 4px 0 var(--color-ink);
+    line-height: 1;
+  }
+
+  .halftone {
+    background-image: radial-gradient(rgb(42 31 69 / 0.22) 1.4px, transparent 1.8px);
+    background-size: 9px 9px;
+  }
+  .halftone-light {
+    background-image: radial-gradient(rgb(255 251 240 / 0.28) 1.4px, transparent 1.8px);
+    background-size: 9px 9px;
+  }
+  .halftone-fade {
+    background-image: radial-gradient(rgb(42 31 69 / 0.28) 1.6px, transparent 2px);
+    background-size: 10px 10px;
+    mask-image: linear-gradient(115deg, #000 0%, transparent 70%);
+  }
+  .speedlines {
+    background: repeating-conic-gradient(from 0deg at 50% 50%, rgb(42 31 69 / 0.09) 0deg 3deg, transparent 3deg 9deg);
+  }
+
+  /* Torn/zigzag bottom edge. */
+  .zigzag-bottom {
+    --z: 14px;
+    mask:
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--z)) 100%;
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, rgb(42 31 69 / 0.06) 25%, rgb(42 31 69 / 0.13) 50%, rgb(42 31 69 / 0.06) 75%);
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+    border-radius: 12px;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -100px;
+    z-index: 100;
+  }
+  .skip-link:focus { top: 1rem; }
+
+  .scroll-comic {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink) transparent;
+  }
+
+  .gain { color: var(--color-green-deep); }
+  .loss { color: var(--color-red-deep); }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+[data-motion="reduced"] *,
+[data-motion="reduced"] *::before,
+[data-motion="reduced"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ───────────────────────── LEGO × comic motion ───────────────────────── */
+
+@layer components {
+  .animate-brick-float { animation: brick-float 7s ease-in-out infinite; }
+  .animate-fig-bob { animation: fig-bob 0.9s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+  .animate-fig-wave { animation: fig-wave 1.3s ease-in-out infinite; }
+  .animate-fig-blink { animation: fig-blink 3.8s infinite; }
+
+  /* Spider-Verse style misregistration jitter on hover */
+  .glitch:hover,
+  .glitch:focus-visible {
+    animation: glitch 0.45s steps(3, end) infinite;
+  }
+
+  /* Rubbery hover: overshoots and settles like a cartoon */
+  .hover-bounce { transition-timing-function: cubic-bezier(0.34, 1.8, 0.64, 1) !important; transition-duration: 380ms !important; }
+
+  .font-heading { font-family: var(--font-heading); }
+}
+
+@keyframes brick-float {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-26px) rotate(calc(var(--r, 0deg) + 14deg)); }
+}
+@keyframes fig-bob {
+  from { transform: translateY(0) scale(1.03, 0.97); }
+  to { transform: translateY(-5px) scale(0.98, 1.03); }
+}
+@keyframes fig-wave {
+  0%, 100% { transform: rotate(-125deg); }
+  40% { transform: rotate(-168deg); }
+  55% { transform: rotate(-150deg); }
+  70% { transform: rotate(-162deg); }
+}
+@keyframes fig-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+@keyframes glitch {
+  0% { transform: none; text-shadow: 3px 1px 0 rgb(255 92 108 / 0.9), -3px -1px 0 rgb(64 98 255 / 0.8); }
+  33% { transform: translate(2px, -2px) skewX(-6deg); text-shadow: -5px 2px 0 rgb(255 92 108 / 0.9), 5px -2px 0 rgb(64 98 255 / 0.8); }
+  66% { transform: translate(-2px, 1px); text-shadow: 7px 0 0 rgb(255 92 108 / 0.9), -3px 2px 0 rgb(64 98 255 / 0.8); }
+  100% { transform: none; }
+}
+
+/* ───────────────────────── Scroll scenes ───────────────────────── */
+
+@layer components {
+  /* Spider-Verse style narration box */
+  .caption-box {
+    display: inline-block;
+    background: var(--color-yellow);
+    border: 2.5px solid var(--color-ink);
+    padding: 0.25rem 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-style: italic;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    box-shadow: 3px 3px 0 0 var(--color-ink);
+    transform: rotate(-1.5deg);
+  }
+  .animate-walk-across { animation: walk-across 18s linear infinite; }
+  .animate-waddle { animation: waddle 0.45s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+}
+
+@keyframes walk-across {
+  from { transform: translateX(-5rem); }
+  to { transform: translateX(calc(100cqw + 1rem)); }
+}
+
+/* Cartoon squash and stretch. Uses `scale` so it stacks on top of any transform. */
+@keyframes jelly {
+  0% { scale: 1 1; }
+  30% { scale: 1.08 0.9; }
+  50% { scale: 0.95 1.06; }
+  70% { scale: 1.03 0.98; }
+  100% { scale: 1 1; }
+}
+@keyframes waddle {
+  from { transform: rotate(-5deg) translateY(0); }
+  to { transform: rotate(5deg) translateY(-3px); }
+}
+
+/* ───────────────────────── Page transition: brick wall + iris ───────────────────────── */
+
+@layer components {
+  .iris-mask {
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 1px));
+    mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 1px));
+  }
+  .iris-ring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(var(--r) * 2 + 12px);
+    height: calc(var(--r) * 2 + 12px);
+    translate: -50% -50%;
+    border: 6px solid var(--color-ink);
+    border-radius: 9999px;
+  }
+  .wall-brick {
+    position: absolute;
+    border: 3px solid var(--color-ink);
+    border-radius: 6px;
+    box-shadow:
+      inset 0 -7px 0 rgb(0 0 0 / 0.16),
+      inset 5px 5px 0 rgb(255 255 255 / 0.4);
+    animation: wall-fall 0.9s cubic-bezier(0.45, 0, 0.85, 0.4) both;
+  }
+  .wall-brick::before,
+  .wall-brick::after {
+    content: "";
+    position: absolute;
+    top: -12px;
+    width: 30px;
+    height: 12px;
+    background: inherit;
+    border: 3px solid var(--color-ink);
+    border-bottom: 0;
+    border-radius: 8px 8px 0 0;
+    box-shadow: inset 4px 3px 0 rgb(255 255 255 / 0.4);
+  }
+  .wall-brick::before { left: 15px; }
+  .wall-brick::after { right: 15px; }
+}
+
+/* Hop up (stretch), then drop away with gravity, spinning outward. */
+@keyframes wall-fall {
+  0% { transform: none; }
+  14% { transform: translateY(-14px) scale(0.95, 1.07) rotate(calc(var(--rot) * 0.05)); }
+  24% { transform: translateY(-10px) scale(1.04, 0.95) rotate(calc(var(--rot) * 0.1)); }
+  100% { transform: translate(var(--x), 120vh) rotate(var(--rot)); }
+}
