@@ -1,6 +1,6 @@
 "use client";
 
-import { Database, Ellipsis, Gauge, Gift, House, LayoutGrid, Plus, Search, Shapes } from "lucide-react";
+import { Database, Ellipsis, Gauge, Gift, House, LayoutGrid, Library, Plus, Search, Shapes } from "lucide-react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,6 +25,7 @@ export const NAV = [
   { href: "/", label: "HQ", Icon: House },
   { href: "/collection", label: "Vault", Icon: LayoutGrid },
   { href: "/value", label: "Value", Icon: Gauge },
+  { href: "/catalog", label: "Catalog", Icon: Library },
   { href: "/wishlist", label: "Wishlist", Icon: Gift },
   { href: "/themes", label: "Themes", Icon: Shapes },
   { href: "/settings", label: "Data", Icon: Database },
@@ -95,7 +96,7 @@ function SpendTicker({ ready }: { ready: boolean }) {
   return (
     <Link
       href="/value"
-      className="group relative hidden items-center gap-2 rounded-xl border-[2.5px] border-ink bg-paper px-3 py-1.5 sm:flex lg:hidden xl:flex"
+      className="group relative hidden items-center gap-2 rounded-xl border-[2.5px] border-ink bg-paper px-3 py-1.5 sm:flex lg:hidden 2xl:flex"
       aria-label={`Total spent on sets in your vault: ${formatINR(spent)}. Open the value tracker`}
     >
       <span className="mono-meta leading-none text-ink/60">Spent</span>
@@ -149,7 +150,9 @@ function TopBar({ ready }: { ready: boolean }) {
                     />
                   )}
                   <Icon size={17} strokeWidth={2.6} className="relative transition-transform duration-200 group-hover:-rotate-12 group-hover:scale-110" aria-hidden />
-                  <span className="relative">{label}</span>
+                  <span className="sr-only xl:not-sr-only">
+                    <span className="relative">{label}</span>
+                  </span>
                 </Link>
               </li>
             );
@@ -164,7 +167,7 @@ function TopBar({ ready }: { ready: boolean }) {
           </button>
           <button type="button" onClick={() => openAdd()} className="btn btn-red btn-sm hidden sm:inline-flex" disabled={!ready} aria-label="Add set">
             <Plus size={18} strokeWidth={3} />
-            <span className="lg:hidden xl:inline">Add set</span>
+            <span className="lg:hidden 2xl:inline">Add set</span>
           </button>
         </div>
       </nav>

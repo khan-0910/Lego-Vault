@@ -8,6 +8,9 @@ export interface SetPrefill {
   name?: string;
   setNumber?: string;
   themeId?: string | null;
+  /** Used when there is no themeId: matched to one of the user's themes, or offered as a new one. */
+  themeName?: string;
+  pieces?: number | null;
   purchasePrice?: Paise | null;
 }
 

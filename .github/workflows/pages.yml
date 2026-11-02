@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Nightly at 08:00 IST: pulls new sets and headlines, then redeploys.
+  schedule:
+    - cron: "30 2 * * *"
 
 permissions:
   contents: write

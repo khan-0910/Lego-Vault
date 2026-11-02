@@ -14,8 +14,10 @@ import { useVault } from "@/lib/store";
 import { CONDITION_ORDER, CONDITIONS } from "@/lib/themes";
 import type { Condition, LegoSet, SetInput } from "@/lib/types";
 import { type SetPrefill, toast, useUI } from "@/lib/ui";
-import { cn, isISODate, todayISO } from "@/lib/utils";
+import { cn, isISODate, normalise, todayISO } from "@/lib/utils";
 import { PhotoUploader } from "./PhotoUploader";
+import { CatalogImage } from "@/components/catalog/CatalogCard";
+import { type CatalogSet, findSet, useCatalog, vaultThemeName } from "@/lib/catalog";
 
 interface Draft {
   name: string;
@@ -155,12 +157,13 @@ function SetFormBody({
   const [draft, setDraft] = useState<Draft>(() => {
     if (editing) return fromSet(editing, themes.find((t) => t.id === editing.themeId)?.name ?? "");
     if (prefill) {
-      const t = prefill.themeId ? themes.find((x) => x.id === prefill.themeId) : undefined;
+      const t = prefill.themeId ? themes.find((x) => x.id === prefill.themeId) : prefill.themeName ? themes.find((x) => normalise(x.name) === normalise(prefill.themeName!)) : undefined;
       return {
         ...emptyDraft(),
         name: prefill.name ?? "",
         setNumber: prefill.setNumber ?? "",
-        theme: t ? { themeId: t.id, name: t.name } : { themeId: null, name: "" },
+        theme: t ? { themeId: t.id, name: t.name } : { themeId: null, name: prefill.themeName ?? "" },
+        pieces: prefill.pieces ? String(prefill.pieces) : "",
         price: paiseToInput(prefill.purchasePrice ?? null),
         date: todayISO(),
       };
@@ -385,6 +388,22 @@ function SetFormBody({
                       />
                     )}
                   </Field>
+                  <CatalogMatch
+                    number={draft.setNumber}
+                    draft={draft}
+                    onFill={(m) =>
+                      setDraft((d) => ({
+                        ...d,
+                        name: m.name,
+                        pieces: m.pieces ? String(m.pieces) : d.pieces,
+                        theme: d.theme.name.trim() ? d.theme : (() => {
+                          const name = vaultThemeName(m.theme);
+                          const t = themes.find((x) => normalise(x.name) === normalise(name));
+                          return t ? { themeId: t.id, name: t.name } : { themeId: null, name };
+                        })(),
+                      }))
+                    }
+                  />
                   <Field label="Pieces" optional error={err("pieces")}>
                     {({ id, describedBy, invalid }) => (
                       <input
@@ -491,7 +510,7 @@ function SetFormBody({
                   label="Estimated market value"
                   optional
                   error={err("value")}
-                  hint="Your own estimate of what it would sell for today. BRICKVAULT does not fetch prices, so this stays an estimate."
+                  hint="Your own estimate of what it would sell for today. BRICKVAULT does not fetch market prices, so this stays an estimate."
                 >
                   {({ id, describedBy, invalid }) => (
                     <div className="space-y-2">
@@ -565,4 +584,46 @@ function SetFormBody({
 function SummaryHint({ draft }: { draft: Draft }): ReactNode {
   const ready = draft.name.trim() && draft.theme.name.trim();
   return <p className="hidden text-sm text-ink/65 sm:block">{ready ? "Name and theme are enough. Save now or add details." : "Only name and theme are required."}</p>;
+}
+
+/** Looks the set number up in the public catalog and offers to fill in the name, theme and pieces. */
+function CatalogMatch({ number, draft, onFill }: { number: string; draft: Draft; onFill: (m: CatalogSet) => void }) {
+  const wanted = /^[A-Za-z0-9.\-]{3,24}$/.test(number.trim());
+  const { data: catalog } = useCatalog(wanted);
+  const match = wanted && catalog ? findSet(catalog, number) : undefined;
+  const filled = match && draft.name === match.name && (!match.pieces || draft.pieces === String(match.pieces));
+  return (
+    <AnimatePresence initial={false}>
+      {match && (
+        <motion.div
+          key={match.num}
+          initial={{ opacity: 0, y: -8, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.12 } }}
+          transition={{ type: "spring", stiffness: 480, damping: 30 }}
+          className="flex items-center gap-3 rounded-xl border-[2.5px] border-ink bg-sky/40 p-2 sm:order-last sm:col-span-2"
+          aria-live="polite"
+        >
+          <CatalogImage num={match.num} name="" className="h-14 w-16 shrink-0 rounded-lg border-2 border-ink" />
+          <div className="min-w-0 flex-1">
+            <p className="mono-meta text-[0.62rem] text-ink/60">Found in the catalog · {match.num}</p>
+            <p className="truncate font-display font-extrabold leading-tight">{match.name}</p>
+            <p className="text-[0.8rem] text-ink/70">
+              {match.theme} · {match.year}
+              {match.pieces ? ` · ${match.pieces.toLocaleString("en-IN")} pieces` : ""}
+            </p>
+          </div>
+          {filled ? (
+            <span className="chip shrink-0 bg-mint">
+              <Check size={14} strokeWidth={3.5} aria-hidden /> Filled in
+            </span>
+          ) : (
+            <button type="button" className="btn btn-sm btn-yellow shrink-0" onClick={() => onFill(match)}>
+              Fill in details
+            </button>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }

@@ -16,16 +16,18 @@ Open http://localhost:3000. On first run, add a set or press **Try demo data** t
 | Script | What it does |
 | --- | --- |
 | `npm run dev` | Dev server |
+| `npm run catalog` | Download the LEGO set catalog and news into `public/catalog/` (run once before `dev`) |
 | `npm run build` / `npm start` | Production build and server |
 | `npm run typecheck` | TypeScript, no emit |
 | `npm test` | Unit tests for money parsing, totals, filters, charts and CSV |
-| `npm run build:pages` | Static export to `out/` for GitHub Pages (served from `/Lego-Vault/`) |
+| `npm run build:pages` | Fresh catalog, then static export to `out/` for GitHub Pages (served from `/Lego-Vault/`) |
 
-Live site: https://khan-0910.github.io/Lego-Vault/ . Every push to `main` rebuilds it through `.github/workflows/pages.yml`, which publishes `out/` to the `gh-pages` branch. Set pages use `/set?id=…` because set ids live in your browser, not on a server.
+Live site: https://khan-0910.github.io/Lego-Vault/ . Every push to `main` and a nightly run at 08:00 IST rebuild it through `.github/workflows/pages.yml`, which publishes `out/` to the `gh-pages` branch. Set pages use `/set?id=…` because set ids live in your browser, not on a server.
 
 ## What's in it
 
-- **HQ** – giant animated total-spent counter, estimated value with a gain/loss dial, sets, pieces, average per set, price per piece, record holders, and "Your universe": one card per theme.
+- **HQ** – giant animated total-spent counter, estimated value with a gain/loss dial, sets, pieces, average per set, price per piece, record holders, "Hot off the press" (Brickset headlines, a daily LEGO fact, upcoming and just-announced sets) and "Your universe": one card per theme.
+- **Catalog** – every LEGO set from 1949 to announced-but-unreleased (about 28,500) with pictures. Search by name or number, filter by theme, year (tap the timeline) or coming soon, then add a set to the vault or wishlist in one click. Typing a set number in the add form offers to fill in the name, theme and pieces.
 - **Value tracker** – filter by status, theme, condition and purchase date. Total spent, estimated value, unrealised gain/loss and return; spending-by-theme donut and bars (click to see the sets behind them); monthly spending as brick columns (per month or running total, 12M/24M/all, click a month); leaderboard by paid, worth or gain; purchase timeline; realised profit on sold sets.
 - **Vault** – grid or list, search by name or set number (`10305` finds `10305-1`), filters for theme, condition, date and price, eight sort orders, choose what cards show, export the current view to CSV.
 - **Set dossier** – photo gallery, money panel, update value, mark sold / undo sale, delete with undo, and tabs for overview, history (every price, value and condition change), photos and a value-over-time chart.
@@ -52,6 +54,8 @@ This build runs fully in the browser with no backend:
 - Photos: IndexedDB, resized to 1600px before saving. Orphaned photos are cleaned up on start.
 
 Clearing site data or switching browsers starts empty, so use **Data → Full backup** regularly.
+
+The set catalog is public reference data, not yours: `scripts/fetch-catalog.mjs` builds it from [Rebrickable](https://rebrickable.com/downloads/)'s daily open data and Brickset's news feed (headline, date and link only; their article text may not be republished). It notes the day each new set first appears by comparing with the copy already live on Pages. If a source is down, the build reuses the live copy instead of failing.
 
 ## Supabase setup (cloud sync – next phase)
 

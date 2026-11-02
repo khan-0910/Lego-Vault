@@ -1,10 +1,11 @@
 "use client";
 
-import { ArrowRight, CornerDownLeft, Database, Gauge, Gift, House, LayoutGrid, type LucideIcon, Plus, Search, Shapes } from "lucide-react";
+import { ArrowRight, CornerDownLeft, Database, Gauge, Gift, House, LayoutGrid, Library, type LucideIcon, Plus, Search, Shapes } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ThemeIcon } from "@/components/ui/ThemeIcon";
+import { catalogHref } from "@/lib/catalog";
 import { matchesQuery } from "@/lib/calc";
 import { useThemes } from "@/lib/hooks";
 import { formatINR } from "@/lib/money";
@@ -14,7 +15,7 @@ import { cn, normalise, textOn } from "@/lib/utils";
 
 interface Item {
   id: string;
-  group: "Actions" | "Sets" | "Themes";
+  group: "Actions" | "Sets" | "Themes" | "Catalog";
   label: string;
   hint?: string;
   icon: ReactNode;
@@ -54,6 +55,7 @@ export function CommandPalette() {
       { id: "hq", group: "Actions", label: "Go to HQ", icon: actionIcon(House), run: go("/") },
       { id: "vault", group: "Actions", label: "Open the vault", icon: actionIcon(LayoutGrid), run: go("/collection") },
       { id: "value", group: "Actions", label: "Open the value tracker", icon: actionIcon(Gauge), run: go("/value") },
+      { id: "catalog", group: "Actions", label: "Browse every LEGO set", icon: actionIcon(Library), run: go("/catalog") },
       { id: "wish", group: "Actions", label: "Open wishlist", icon: actionIcon(Gift), run: go("/wishlist") },
       { id: "wish-add", group: "Actions", label: "Add to wishlist", icon: actionIcon(Gift), run: go("/wishlist?add=1") },
       { id: "themes", group: "Actions", label: "Manage themes", icon: actionIcon(Shapes), run: go("/themes") },
@@ -93,7 +95,10 @@ export function CommandPalette() {
             run: go(`/collection?theme=${t.id}`),
           }))
       : [];
-    return [...setItems, ...themeItems, ...filteredActions];
+    const catalogItem: Item[] = query
+      ? [{ id: "catalog-search", group: "Catalog", label: `Find “${q.trim()}” in every LEGO set`, hint: "catalog", icon: actionIcon(Library), run: go(catalogHref(q.trim())) }]
+      : [];
+    return [...setItems, ...themeItems, ...catalogItem, ...filteredActions];
   }, [q, sets, themes, get, openAdd, router]);
 
   const run = (item: Item | undefined) => {

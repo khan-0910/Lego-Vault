@@ -9,6 +9,7 @@ import { Delta } from "@/components/sets/SetBits";
 import { SetCard } from "@/components/sets/SetCard";
 import { CountUp } from "@/components/ui/CountUp";
 import { DoodleArrow, Marquee, Sparkle, Squiggle, Starburst, Studs } from "@/components/ui/Decor";
+import { BrickNews } from "@/components/catalog/BrickNews";
 import { Minibuild } from "@/components/lego/Minibuild";
 import { Minifig } from "@/components/lego/Minifig";
 import { BrickBurst, BrickDivider, ComicStory, ScrollTitle, type StoryPanel, ThemeTower, type TowerLayer } from "@/components/lego/ScrollScenes";
@@ -267,6 +268,9 @@ function HQ() {
           extra={stats.topTheme ? `${formatPct(stats.topTheme.share * 100)} of your spend` : undefined}
         />
       </section>
+
+      {/* ── News desk: headlines, a fact, new and upcoming sets ── */}
+      <BrickNews />
 
       <BrickDivider />
 
@@ -530,6 +534,10 @@ function FirstRun() {
           </motion.div>
         ))}
       </section>
+
+      <div className="mt-14">
+        <BrickNews />
+      </div>
     </div>
   );
 }
