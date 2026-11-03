@@ -16,6 +16,7 @@ export const CSV_COLUMNS = [
   "sale_price_inr",
   "sale_date",
   "notes",
+  "type",
 ] as const;
 
 function cell(v: string | number | null | undefined): string {
@@ -43,6 +44,7 @@ export function setsToCSV(sets: LegoSet[], themes: Map<string, Theme>): string {
         paiseToInput(s.salePrice),
         s.saleDate,
         s.notes,
+        s.kind ?? "set",
       ]
         .map(cell)
         .join(","),
@@ -110,6 +112,8 @@ const ALIASES: Record<string, (typeof CSV_COLUMNS)[number]> = {
   market_value: "estimated_value_inr",
   value: "estimated_value_inr",
   notes: "notes",
+  type: "type",
+  kind: "type",
 };
 
 const CONDITIONS: Condition[] = ["sealed", "opened", "built", "used", "incomplete"];
@@ -153,6 +157,7 @@ export function csvToSets(text: string): CSVImport {
       return;
     }
     rows.push({
+      kind: /^(mini)?fig/i.test(get("type")) ? "minifig" : "set",
       name: name.slice(0, 120),
       setNumber: get("set_number").slice(0, 24),
       themeName: get("theme") || "Unsorted",

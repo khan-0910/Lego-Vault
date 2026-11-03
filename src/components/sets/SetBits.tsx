@@ -63,6 +63,11 @@ export function SetCover({ set, theme, size = "card", className, imgClassName }:
   );
 }
 
+/** Marks a vault entry that is a minifigure rather than a set. */
+export function FigTag({ className }: { className?: string }) {
+  return <span className={cn("-rotate-3 rounded-md border-2 border-ink bg-purple px-1.5 py-0.5 font-mono text-[0.66rem] font-extrabold tracking-wider text-ink shadow-comic-sm", className)}>MINIFIG</span>;
+}
+
 /** Gain/loss read-out. Arrow + sign + words, so it never relies on colour alone. */
 export function GainChip({ set, className, size = "md" }: { set: LegoSet; className?: string; size?: "sm" | "md" }) {
   const g = gainOf(set);

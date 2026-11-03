@@ -7,7 +7,22 @@ import { Suspense, useDeferredValue, useMemo, useState } from "react";
 import { CatalogCard, useOwnedKeys } from "@/components/catalog/CatalogCard";
 import { PageHeader } from "@/components/ui/Panel";
 import { BrickLoader, EmptyState, ErrorState } from "@/components/ui/States";
-import { type Catalog, type CatalogQuery, type CatalogSort, DEFAULT_QUERY, searchCatalog, setKey, useCatalog, useHighlights } from "@/lib/catalog";
+import { Segmented } from "@/components/ui/Fields";
+import {
+  type Catalog,
+  type CatalogQuery,
+  type CatalogSort,
+  DEFAULT_FIG_QUERY,
+  DEFAULT_QUERY,
+  type FigCatalog,
+  type FigQuery,
+  searchCatalog,
+  searchFigs,
+  setKey,
+  useCatalog,
+  useFigs,
+  useHighlights,
+} from "@/lib/catalog";
 import { formatNumber } from "@/lib/money";
 import { popIn } from "@/lib/motion";
 import { cn, formatDate, pluralise } from "@/lib/utils";
@@ -28,34 +43,162 @@ export default function CatalogPage() {
   );
 }
 
+type Tab = "sets" | "minifigs";
+
 function CatalogView() {
-  const { data: catalog, error, retry } = useCatalog();
+  const params = useSearchParams();
+  const [tab, setTab] = useState<Tab>(params.get("tab") === "minifigs" ? "minifigs" : "sets");
+  const sets = useCatalog(tab === "sets");
+  const figs = useFigs(tab === "minifigs");
   const { data: highlights } = useHighlights();
   const thisYear = highlights?.thisYear ?? new Date().getFullYear();
+  const current = tab === "sets" ? sets : figs;
+
+  const switchTab = (t: Tab) => {
+    setTab(t);
+    // Keep the tab in the address so a refresh or shared link opens the same list.
+    window.history.replaceState(null, "", t === "sets" ? window.location.pathname : `${window.location.pathname}?tab=minifigs`);
+  };
 
   return (
     <div>
       <PageHeader
+        key={tab}
         kicker="Catalog"
-        title="Every set ever"
-        accent="#62D2FF"
+        title={tab === "sets" ? "Every set ever" : "Every minifig ever"}
+        accent={tab === "sets" ? "#62D2FF" : "#A77BFF"}
         build="tower"
-        fig={{ torso: "#62D2FF", legs: "#2A1F45", print: "star", mood: "wow", hat: "cap", hatColor: "#FF5C6C" }}
+        fig={{ torso: tab === "sets" ? "#62D2FF" : "#A77BFF", legs: "#2A1F45", print: "star", mood: "wow", hat: "cap", hatColor: "#FF5C6C" }}
         subtitle={
           <>
-            Every LEGO set from 1949 to the ones that are not out yet{catalog ? `, ${formatNumber(catalog.sets.length)} in all` : ""}. Refreshed every night, so new sets show up on their own.
-            {highlights && <span className="mt-1 block text-sm text-ink/60">Last updated {formatDate(highlights.updatedAt)}. Set data and pictures from Rebrickable.</span>}
+            {tab === "sets"
+              ? `Every LEGO set from 1949 to the ones that are not out yet${sets.data ? `, ${formatNumber(sets.data.sets.length)} in all` : ""}.`
+              : `Every LEGO minifigure${figs.data ? `, ${formatNumber(figs.data.figs.length)} of them` : ""}, with the sets each one comes in.`}{" "}
+            Refreshed every night, so new ones show up on their own.
+            {highlights && <span className="mt-1 block text-sm text-ink/60">Last updated {formatDate(highlights.updatedAt)}. Data and pictures from Rebrickable.</span>}
           </>
         }
       />
-      {error ? (
+      <Segmented<Tab>
+        label="Catalog"
+        className="mb-5"
+        value={tab}
+        onChange={switchTab}
+        options={[
+          { value: "sets", label: "Sets" },
+          { value: "minifigs", label: "Minifigures" },
+        ]}
+      />
+      {current.error ? (
         <div className="panel">
-          <ErrorState title="The catalog did not load" body="Check your connection and try again. Running locally? Run npm run catalog once to download it." onRetry={retry} />
+          <ErrorState title="The catalog did not load" body="Check your connection and try again. Running locally? Run npm run catalog once to download it." onRetry={current.retry} />
         </div>
-      ) : !catalog ? (
-        <BrickLoader label="Unboxing every set ever made…" />
+      ) : tab === "sets" ? (
+        sets.data ? <Browser catalog={sets.data} thisYear={thisYear} /> : <BrickLoader label="Unboxing every set ever made…" />
+      ) : figs.data ? (
+        <FigBrowser figs={figs.data} thisYear={thisYear} />
       ) : (
-        <Browser catalog={catalog} thisYear={thisYear} />
+        <BrickLoader label="Lining up every minifigure…" />
+      )}
+    </div>
+  );
+}
+
+const FIG_SORTS: Array<{ value: FigQuery["sort"]; label: string }> = [
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "name", label: "A to Z" },
+];
+
+function FigBrowser({ figs, thisYear }: { figs: FigCatalog; thisYear: number }) {
+  const params = useSearchParams();
+  const [query, setQuery] = useState<FigQuery>(() => ({ ...DEFAULT_FIG_QUERY, q: params.get("q") ?? "" }));
+  const [shown, setShown] = useState(PAGE);
+  const q = useDeferredValue(query.q);
+  const results = useMemo(() => searchFigs(figs.figs, { ...query, q }), [figs, query, q]);
+  const { owned, wished } = useOwnedKeys();
+  const update = (patch: Partial<FigQuery>) => {
+    setQuery((s) => ({ ...s, ...patch }));
+    setShown(PAGE);
+  };
+  const filtered = query.theme != null || query.year != null || query.q !== "";
+
+  return (
+    <div className="space-y-6">
+      <Timeline years={figs.years} selected={query.year} thisYear={thisYear} noun="minifig" onPick={(year) => update({ year: query.year === year ? null : year })} />
+
+      <section aria-label="Search minifigures" className="panel space-y-4 p-4 sm:p-5">
+        <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
+          <label className="relative block">
+            <span className="sr-only">Search by name, number, theme or set</span>
+            <Search size={18} strokeWidth={2.8} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden />
+            <input
+              className="input pl-10 font-semibold"
+              type="search"
+              value={query.q}
+              onChange={(e) => update({ q: e.target.value })}
+              placeholder="Try Darth Vader, Spaceman or 10305"
+              autoComplete="off"
+            />
+          </label>
+          <label>
+            <span className="sr-only">Theme</span>
+            <select className="input font-semibold" value={query.theme ?? ""} onChange={(e) => update({ theme: e.target.value || null })}>
+              <option value="">All themes ({figs.themes.length})</option>
+              {figs.themes.map((t) => (
+                <option key={t.name} value={t.name}>
+                  {t.name} ({formatNumber(t.count)})
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="sr-only">Sort</span>
+            <select className="input font-semibold" value={query.sort} onChange={(e) => update({ sort: e.target.value as FigQuery["sort"] })}>
+              {FIG_SORTS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {query.year != null && (
+            <button type="button" className="chip" aria-pressed onClick={() => update({ year: null })}>
+              {query.year} <X size={14} strokeWidth={3} aria-label="clear year" />
+            </button>
+          )}
+          {filtered && (
+            <button type="button" className="btn btn-sm btn-ghost" onClick={() => update(DEFAULT_FIG_QUERY)}>
+              Clear all
+            </button>
+          )}
+          <p className="mono-meta ml-auto text-ink/60" aria-live="polite">
+            {pluralise(results.length, "minifig")}
+          </p>
+        </div>
+      </section>
+
+      {results.length === 0 ? (
+        <div className="panel">
+          <EmptyState art="search" title="No minifigures match" body="Try fewer words or another theme. A set number finds the figures that come in it." />
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            {results.slice(0, shown).map((f, i) => (
+              <CatalogCard key={f.num} kind="minifig" set={f} index={i} owned={owned.has(setKey(f.num))} wished={wished.has(setKey(f.num))} thisYear={thisYear} />
+            ))}
+          </div>
+          {shown < results.length && (
+            <div className="flex justify-center">
+              <button type="button" className="btn btn-yellow" onClick={() => setShown((n) => n + PAGE * 2)}>
+                Show more ({formatNumber(results.length - shown)} left)
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -162,13 +305,25 @@ function Browser({ catalog, thisYear }: { catalog: Catalog; thisYear: number }) 
 }
 
 /** One bar per year, 1949 to next year. Tap a bar to see that year's sets. */
-function Timeline({ years, selected, thisYear, onPick }: { years: Catalog["years"]; selected: number | null; thisYear: number; onPick: (year: number) => void }) {
+function Timeline({
+  years,
+  selected,
+  thisYear,
+  onPick,
+  noun = "set",
+}: {
+  years: Catalog["years"];
+  selected: number | null;
+  thisYear: number;
+  onPick: (year: number) => void;
+  noun?: string;
+}) {
   const max = Math.max(1, ...years.map((y) => y.count));
   return (
     <section aria-label="Sets per year" className="panel overflow-hidden p-4 sm:p-5">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="font-display text-xl font-extrabold uppercase">Brick timeline</h2>
-        <p className="mono-meta text-ink/60">Sets per year · tap a year</p>
+        <p className="mono-meta text-ink/60">{noun === "set" ? "Sets" : "New minifigs"} per year · tap a year</p>
       </div>
       <div className="flex h-28 items-end gap-px sm:gap-[2px]">
         {years.map((y, i) => {
@@ -180,8 +335,8 @@ function Timeline({ years, selected, thisYear, onPick }: { years: Catalog["years
               type="button"
               onClick={() => onPick(y.year)}
               aria-pressed={on}
-              aria-label={`${y.year}: ${pluralise(y.count, "set")}`}
-              title={`${y.year}: ${pluralise(y.count, "set")}`}
+              aria-label={`${y.year}: ${pluralise(y.count, noun)}`}
+              title={`${y.year}: ${pluralise(y.count, noun)}`}
               initial={{ scaleY: 0 }}
               whileInView={{ scaleY: 1 }}
               viewport={{ once: true }}

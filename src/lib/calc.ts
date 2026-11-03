@@ -1,5 +1,5 @@
 import type { LegoSet, Paise, SetFilters, SortKey, StatusScope, Theme } from "./types";
-import { monthKey, normalise, todayISO } from "./utils";
+import { monthKey, normalise, pluralise, todayISO } from "./utils";
 
 /*
  * Every number BRICKVAULT shows is derived here from the actual set records.
@@ -13,7 +13,9 @@ import { monthKey, normalise, todayISO } from "./utils";
 export interface ThemeSlice {
   themeId: string;
   spent: Paise;
+  /** Sets and minifigures together; `figs` says how many are minifigures. */
   count: number;
+  figs: number;
   pieces: number;
   value: Paise;
   valuedCount: number;
@@ -23,7 +25,10 @@ export interface ThemeSlice {
 }
 
 export interface Stats {
+  /** Every item. `figCount` of them are minifigures, the rest sets. */
   count: number;
+  setCount: number;
+  figCount: number;
   pricedCount: number;
   totalSpent: Paise;
   totalPieces: number;
@@ -41,6 +46,15 @@ export interface Stats {
   topByValue: LegoSet | null;
   topTheme: ThemeSlice | null;
   byTheme: ThemeSlice[];
+}
+
+export const isFig = (s: { kind?: LegoSet["kind"] }) => s.kind === "minifig";
+
+/** "3 sets", "3 sets and 2 minifigs", "1 minifig". */
+export function itemsLabel(count: number, figs: number): string {
+  const sets = count - figs;
+  const parts = [sets > 0 || figs === 0 ? pluralise(sets, "set") : null, figs > 0 ? pluralise(figs, "minifig") : null].filter(Boolean);
+  return parts.join(" and ");
 }
 
 export function inScope(sets: LegoSet[], status: StatusScope): LegoSet[] {
@@ -77,9 +91,10 @@ export function computeStats(sets: LegoSet[]): Stats {
     const slice =
       themes.get(s.themeId) ??
       themes
-        .set(s.themeId, { themeId: s.themeId, spent: 0, count: 0, pieces: 0, value: 0, valuedCount: 0, share: 0, sets: [] })
+        .set(s.themeId, { themeId: s.themeId, spent: 0, count: 0, figs: 0, pieces: 0, value: 0, valuedCount: 0, share: 0, sets: [] })
         .get(s.themeId)!;
     slice.count += 1;
+    if (isFig(s)) slice.figs += 1;
     slice.sets.push(s);
 
     if (s.pieces) {
@@ -116,8 +131,11 @@ export function computeStats(sets: LegoSet[]): Stats {
 
   const unrealised = plCount > 0 ? plValue - plBasis : null;
 
+  const figCount = sets.filter(isFig).length;
   return {
     count: sets.length,
+    setCount: sets.length - figCount,
+    figCount,
     pricedCount,
     totalSpent,
     totalPieces,
@@ -168,6 +186,7 @@ export function computeRealised(sets: LegoSet[]): Realised {
 
 export const DEFAULT_FILTERS: SetFilters = {
   q: "",
+  kind: "all",
   themeIds: [],
   conditions: [],
   status: "owned",
@@ -179,6 +198,7 @@ export const DEFAULT_FILTERS: SetFilters = {
 
 export function activeFilterCount(f: SetFilters): number {
   return (
+    (f.kind !== "all" ? 1 : 0) +
     (f.themeIds.length ? 1 : 0) +
     (f.conditions.length ? 1 : 0) +
     (f.status !== "owned" ? 1 : 0) +
@@ -204,6 +224,7 @@ export function matchesQuery(set: LegoSet, q: string, themeName = ""): boolean {
 export function filterSets(sets: LegoSet[], f: SetFilters, themes: Map<string, Theme>): LegoSet[] {
   return sets.filter((s) => {
     if (f.status !== "all" && s.status !== f.status) return false;
+    if (f.kind !== "all" && (s.kind ?? "set") !== f.kind) return false;
     if (f.themeIds.length && !f.themeIds.includes(s.themeId)) return false;
     if (f.conditions.length && !f.conditions.includes(s.condition)) return false;
     if (f.from && (!s.purchaseDate || s.purchaseDate < f.from)) return false;

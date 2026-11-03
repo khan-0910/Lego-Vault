@@ -18,7 +18,7 @@ import { popIn } from "@/lib/motion";
 
 import { themeSurface } from "@/components/ui/ThemeBadge";
 import { ThemeIcon } from "@/components/ui/ThemeIcon";
-import { computeStats, inScope } from "@/lib/calc";
+import { computeStats, inScope, itemsLabel } from "@/lib/calc";
 import { buildDemo } from "@/lib/demo";
 import { useThemes } from "@/lib/hooks";
 import { compactINR, formatINR, formatNumber, formatPct } from "@/lib/money";
@@ -58,7 +58,7 @@ function HQ() {
         color: t.color,
         weight: s.spent / max,
         amount: formatINR(s.spent),
-        detail: `${pluralise(s.count, "set")} · ${formatPct(s.share * 100)} of your spend`,
+        detail: `${itemsLabel(s.count, s.figs)} · ${formatPct(s.share * 100)} of your spend`,
       };
     });
   }, [stats.byTheme, get]);
@@ -92,7 +92,7 @@ function HQ() {
         ? {
             caption: "Chapter 3 · A theme takes over",
             title: `${topTheme.name} rules`,
-            body: `${formatPct(stats.topTheme.share * 100)} of everything you spent went here, across ${pluralise(stats.topTheme.count, "set")}.`,
+            body: `${formatPct(stats.topTheme.share * 100)} of everything you spent went here, across ${itemsLabel(stats.topTheme.count, stats.topTheme.figs)}.`,
             sfx: "WHOOSH!",
             tone: "#7BF1C8",
             href: `/collection?theme=${topTheme.id}`,
@@ -101,7 +101,7 @@ function HQ() {
         : null,
       {
         caption: "Chapter 4 · Today",
-        title: `${pluralise(stats.count, "set")}, ${pluralise(stats.totalPieces, "piece")}`,
+        title: `${itemsLabel(stats.count, stats.figCount)}, ${pluralise(stats.totalPieces, "piece")}`,
         body:
           stats.valuedCount > 0
             ? `Your own estimates put the vault at ${formatINR(stats.estValue)}${stats.unrealised != null ? `, ${formatINR(stats.unrealised, { signed: true })} against what you paid for those sets` : ""}.`
@@ -158,7 +158,7 @@ function HQ() {
               )}
             </div>
             <p className="mt-3 max-w-lg text-[1.02rem] font-semibold leading-snug">
-              Across {pluralise(stats.count, "set")} and {pluralise(stats.totalPieces, "piece")} in your vault.
+              Across {itemsLabel(stats.count, stats.figCount)}, {pluralise(stats.totalPieces, "piece")} in your vault.
               {lifetime !== stats.totalSpent && <span className="block text-sm font-medium opacity-80">Lifetime, including sold sets: {formatINR(lifetime)}</span>}
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
@@ -186,7 +186,7 @@ function HQ() {
             <div>
               <CountUp value={stats.estValue} money memoryKey="hq-value" className="block font-display text-4xl font-extrabold tracking-tight sm:text-5xl" />
               <p className="mt-1 text-sm text-ink/70">
-                Your estimates for {stats.valuedCount} of {pluralise(stats.count, "set")}.
+                Your estimates for {stats.valuedCount} of {itemsLabel(stats.count, stats.figCount)}.
               </p>
             </div>
             {stats.unrealised != null && <Delta delta={stats.unrealised} pct={stats.returnPct} showLabel />}
@@ -217,7 +217,8 @@ function HQ() {
         <Marquee>
           {[
             `${formatINR(stats.totalSpent)} spent`,
-            `${formatNumber(stats.count)} sets`,
+            `${formatNumber(stats.setCount)} sets`,
+            stats.figCount ? `${formatNumber(stats.figCount)} minifigs` : null,
             `${formatNumber(stats.totalPieces)} pieces`,
             stats.pricePerPiece != null ? `${formatINR(stats.pricePerPiece)} per piece` : null,
             topTheme ? `Top theme: ${topTheme.name}` : null,
@@ -234,8 +235,8 @@ function HQ() {
 
       {/* ── Stat tiles ── */}
       <section aria-label="Collection numbers" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatTile label="Sets owned" tone="#FFD447" icon={<Blocks size={13} strokeWidth={3} aria-hidden />}>
-          <CountUp value={stats.count} memoryKey="hq-count" />
+        <StatTile label="Sets owned" tone="#FFD447" icon={<Blocks size={13} strokeWidth={3} aria-hidden />} sub={stats.figCount ? `Plus ${pluralise(stats.figCount, "minifig")}` : undefined}>
+          <CountUp value={stats.setCount} memoryKey="hq-count" />
         </StatTile>
         <StatTile label="Total pieces" tone="#62D2FF" delay={0.05} icon={<Puzzle size={13} strokeWidth={3} aria-hidden />}>
           <CountUp value={stats.totalPieces} memoryKey="hq-pieces" />
@@ -310,7 +311,7 @@ function HQ() {
                       <h3 className="font-display text-xl font-extrabold uppercase leading-none tracking-tight">{t.name}</h3>
                       <p className="mt-1.5 font-display text-lg font-extrabold">{formatINR(slice.spent)}</p>
                       <p className="mono-meta text-[0.62rem] opacity-80">
-                        {pluralise(slice.count, "set")} · {formatPct(slice.share * 100)}
+                        {itemsLabel(slice.count, slice.figs)} · {formatPct(slice.share * 100)}
                       </p>
                     </div>
                   </div>

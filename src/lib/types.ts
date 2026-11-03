@@ -3,6 +3,8 @@ export type Paise = number;
 
 export type Condition = "sealed" | "opened" | "built" | "used" | "incomplete";
 export type SetStatus = "owned" | "sold";
+/** What a vault entry is. Older records have no kind and are sets. */
+export type ItemKind = "set" | "minifig";
 
 export type SetEventType =
   | "added"
@@ -27,6 +29,7 @@ export interface SetEvent {
 
 export interface LegoSet {
   id: string;
+  kind?: ItemKind;
   name: string;
   setNumber: string;
   themeId: string;
@@ -113,6 +116,7 @@ export interface WishItem {
 
 /** What the add/edit form hands to the store. */
 export interface SetInput {
+  kind?: ItemKind;
   name: string;
   setNumber: string;
   themeId: string;
@@ -132,6 +136,7 @@ export type StatusScope = "owned" | "sold" | "all";
 
 export interface SetFilters {
   q: string;
+  kind: ItemKind | "all";
   themeIds: string[];
   conditions: Condition[];
   status: StatusScope;

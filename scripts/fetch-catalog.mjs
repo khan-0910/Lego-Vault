@@ -1,6 +1,7 @@
 // Builds the LEGO set catalog and homepage news into public/catalog.
 //   sets.json        every set Rebrickable knows, 1949 to announced-but-unreleased
 //   highlights.json  small file for the homepage: upcoming, just announced, facts, news
+//   minifigs.json    every minifigure, with the sets it comes in
 //   seen.json        when each new set first showed up, carried over from the live site
 // Runs before every Pages build, and the workflow runs nightly, so new sets appear on their own.
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -145,6 +146,44 @@ async function main() {
     return t?.[1] ?? "Other";
   };
 
+  // Minifigures, each with the sets it comes in (from the first inventory of every set).
+  let figs;
+  try {
+    const [figRows, invRows, invFigRows] = await Promise.all([csv("minifigs"), csv("inventories"), csv("inventory_minifigs")]);
+    const firstInv = new Map();
+    for (const [id, version, setNum] of invRows) {
+      if (setNum.startsWith("fig-")) continue;
+      const prev = firstInv.get(setNum);
+      if (!prev || Number(version) < prev.version) firstInv.set(setNum, { id, version: Number(version) });
+    }
+    const invToSet = new Map([...firstInv].map(([setNum, inv]) => [inv.id, setNum]));
+    const setYear = new Map(catalog.sets.map((s) => [s[0], s]));
+    const inSets = new Map();
+    for (const [invId, figNum] of invFigRows) {
+      const setNum = invToSet.get(invId);
+      if (!setNum || !setYear.has(setNum)) continue;
+      const list = inSets.get(figNum) ?? inSets.set(figNum, []).get(figNum);
+      if (!list.includes(setNum)) list.push(setNum);
+    }
+    const themeNames = [];
+    const themeIdx = new Map();
+    const idx = (name) => themeIdx.get(name) ?? (themeIdx.set(name, themeNames.push(name) - 1), themeNames.length - 1);
+    figs = {
+      themes: themeNames,
+      // [fig number, name, pieces, theme index or -1, first year or 0, sets it comes in, oldest first]
+      figs: figRows
+        .map(([num, name, parts]) => {
+          const sets = (inSets.get(num) ?? []).sort((a, b) => setYear.get(a)[2] - setYear.get(b)[2] || a.localeCompare(b));
+          const first = sets.length ? setYear.get(sets[0]) : null;
+          return [num, name, Number(parts), first ? idx(rootName(first[3])) : -1, first ? first[2] : 0, sets];
+        })
+        .sort((a, b) => b[4] - a[4] || a[0].localeCompare(b[0])),
+    };
+  } catch (e) {
+    console.warn(`Minifigs: Rebrickable unavailable (${e.message}). Reusing the live copy.`);
+    figs = (await tryGet(`${PREV}/minifigs.json`, "json")) ?? { themes: [], figs: [] };
+  }
+
   // First-seen dates: anything not in last night's catalog is newly announced today.
   const [prevSets, prevSeen] = await Promise.all([tryGet(`${PREV}/sets.json`, "json"), tryGet(`${PREV}/seen.json`, "json")]);
   const seen = { since: prevSeen?.since ?? today, added: { ...(prevSeen?.added ?? {}) } };
@@ -181,9 +220,10 @@ async function main() {
   };
 
   writeFileSync(`${OUT}/sets.json`, JSON.stringify(catalog));
+  writeFileSync(`${OUT}/minifigs.json`, JSON.stringify(figs));
   writeFileSync(`${OUT}/seen.json`, JSON.stringify(seen));
   writeFileSync(`${OUT}/highlights.json`, JSON.stringify(highlights));
-  console.log(`Catalog: ${fmt(catalog.sets.length)} sets, ${highlights.upcomingCount} upcoming, ${highlights.fresh.length} just announced, ${news.length} headlines.`);
+  console.log(`Catalog: ${fmt(catalog.sets.length)} sets, ${fmt(figs.figs.length)} minifigs, ${highlights.upcomingCount} upcoming, ${highlights.fresh.length} just announced, ${news.length} headlines.`);
 }
 
 main().catch((e) => {

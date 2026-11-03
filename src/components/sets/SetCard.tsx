@@ -9,7 +9,7 @@ import type { CardField, LegoSet, Theme } from "@/lib/types";
 import { StudRow } from "@/components/ui/Panel";
 import { dropLand } from "@/lib/motion";
 import { cn, formatDate } from "@/lib/utils";
-import { GainChip, SetCover, SoldStamp } from "./SetBits";
+import { FigTag, GainChip, SetCover, SoldStamp } from "./SetBits";
 
 export function SetCard({
   set,
@@ -73,6 +73,7 @@ export function SetCard({
               <ConditionStamp condition={set.condition} size="sm" className="absolute right-2.5 top-2.5 rotate-3 shadow-comic-sm transition-transform duration-200 group-hover:rotate-[-4deg] group-hover:scale-110" />
             )}
             {set.status === "sold" && <SoldStamp className="absolute bottom-3 left-1/2 -translate-x-1/2 text-lg" />}
+            {set.kind === "minifig" && <FigTag className="absolute bottom-2.5 left-2.5" />}
             {badge && (
               <span className="sfx absolute -bottom-3 right-3 rotate-[-6deg] text-xl" aria-label={badge}>
                 {badge}

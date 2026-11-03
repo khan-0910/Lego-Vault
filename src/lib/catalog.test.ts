@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCatalog, DEFAULT_QUERY, findSet, numbersIn, searchCatalog, setKey } from "./catalog";
+import { buildCatalog, buildFigs, DEFAULT_FIG_QUERY, DEFAULT_QUERY, findFig, findSet, numbersIn, searchCatalog, searchFigs, setKey, suggestByName } from "./catalog";
 
 const catalog = buildCatalog({
   themes: [
@@ -45,5 +45,34 @@ describe("catalog", () => {
   it("pulls set numbers out of headlines but not years", () => {
     expect(numbersIn("Review: 75642 Showdown with Captain Smoker")).toEqual(["75642"]);
     expect(numbersIn("The best sets of 2026")).toEqual([]);
+  });
+});
+
+const figs = buildFigs({
+  themes: ["Star Wars", "Icons"],
+  figs: [
+    ["fig-000001", "Darth Vader", 5, 0, 2017, ["75192-1", "75367-1"]],
+    ["fig-000002", "Lion Knight", 4, 1, 2022, ["10305-1"]],
+    ["fig-000003", "Vader's TIE Pilot", 4, 0, 2019, ["75192-1"]],
+    ["fig-000004", "Mystery Promo", 3, -1, 0, []],
+  ],
+});
+
+describe("minifigures", () => {
+  it("maps each set to the figures that come in it", () => {
+    expect(figs.bySet.get("75192")?.map((f) => f.num)).toEqual(["fig-000001", "fig-000003"]);
+    expect(findFig(figs, "FIG-000002")?.theme).toBe("Icons");
+    expect(figs.themes.map((t) => t.name)).toEqual(["Icons", "Star Wars"]);
+  });
+
+  it("finds figures by set number and keeps undated ones last", () => {
+    expect(searchFigs(figs.figs, { ...DEFAULT_FIG_QUERY, q: "75192" }).map((f) => f.num)).toEqual(["fig-000003", "fig-000001"]);
+    expect(searchFigs(figs.figs, { ...DEFAULT_FIG_QUERY, sort: "oldest" }).at(-1)?.num).toBe("fig-000004");
+  });
+
+  it("suggests names that start with what was typed first", () => {
+    expect(suggestByName(figs.figs, "vader").map((f) => f.name)).toEqual(["Vader's TIE Pilot", "Darth Vader"]);
+    expect(suggestByName(figs.figs, "v")).toEqual([]);
+    expect(suggestByName(figs.figs, "knight lion").map((f) => f.num)).toEqual(["fig-000002"]);
   });
 });

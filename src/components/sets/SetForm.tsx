@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, Check, RotateCcw, Save } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { Delta } from "@/components/sets/SetBits";
-import { Field, MoneyInput } from "@/components/ui/Fields";
+import { Field, MoneyInput, Segmented } from "@/components/ui/Fields";
 import { Modal } from "@/components/ui/Modal";
 import { ThemeCombobox, type ThemePick } from "@/components/ui/ThemeCombobox";
 import { computeStats, inScope } from "@/lib/calc";
@@ -12,14 +12,16 @@ import { DRAFT_KEY } from "@/lib/hooks";
 import { formatINR, paiseToInput, parseINR } from "@/lib/money";
 import { useVault } from "@/lib/store";
 import { CONDITION_ORDER, CONDITIONS } from "@/lib/themes";
-import type { Condition, LegoSet, SetInput } from "@/lib/types";
+import type { Condition, ItemKind, LegoSet, SetInput } from "@/lib/types";
 import { type SetPrefill, toast, useUI } from "@/lib/ui";
 import { cn, isISODate, normalise, todayISO } from "@/lib/utils";
 import { PhotoUploader } from "./PhotoUploader";
 import { CatalogImage } from "@/components/catalog/CatalogCard";
-import { type CatalogSet, findSet, useCatalog, vaultThemeName } from "@/lib/catalog";
+import { NamePicker, type Pickable } from "@/components/catalog/NamePicker";
+import { type CatalogFig, findFig, findSet, setImage, setKey, useCatalog, useFigs, vaultThemeName } from "@/lib/catalog";
 
 interface Draft {
+  kind: ItemKind;
   name: string;
   setNumber: string;
   theme: ThemePick;
@@ -31,18 +33,23 @@ interface Draft {
   value: string;
   notes: string;
   photoIds: string[];
+  /** Minifigure numbers from the set's inventory to add as their own entries too. */
+  figs: string[];
+  /** The theme came from a catalog pick, so the next pick may replace it. */
+  themeAuto?: boolean;
 }
 
 type Errors = Partial<Record<keyof Draft, string>>;
 
 const STEPS = [
-  { title: "The set", blurb: "What did you get?", tone: "#FFD447", fields: ["name", "theme", "setNumber", "pieces"] },
+  { title: "The basics", blurb: "What did you get?", tone: "#FFD447", fields: ["name", "theme", "setNumber", "pieces"] },
   { title: "The deal", blurb: "What did it cost?", tone: "#7BF1C8", fields: ["price", "date", "seller", "condition"] },
   { title: "The value", blurb: "What is it worth?", tone: "#FF9FD0", fields: ["value", "notes"] },
   { title: "Photos", blurb: "Show it off", tone: "#62D2FF", fields: ["photoIds"] },
 ] as const;
 
 const emptyDraft = (): Draft => ({
+  kind: "set",
   name: "",
   setNumber: "",
   theme: { themeId: null, name: "" },
@@ -54,10 +61,12 @@ const emptyDraft = (): Draft => ({
   value: "",
   notes: "",
   photoIds: [],
+  figs: [],
 });
 
 function fromSet(s: LegoSet, themeName: string): Draft {
   return {
+    kind: s.kind ?? "set",
     name: s.name,
     setNumber: s.setNumber,
     theme: { themeId: s.themeId, name: themeName },
@@ -69,12 +78,13 @@ function fromSet(s: LegoSet, themeName: string): Draft {
     value: paiseToInput(s.marketValue),
     notes: s.notes,
     photoIds: s.photoIds,
+    figs: [],
   };
 }
 
 function validate(d: Draft): Errors {
   const e: Errors = {};
-  if (!d.name.trim()) e.name = "Give the set a name, like “Lion Knights’ Castle”";
+  if (!d.name.trim()) e.name = d.kind === "minifig" ? "Give the minifigure a name, like “Darth Vader”" : "Give the set a name, like “Lion Knights’ Castle”";
   else if (d.name.length > 120) e.name = "Keep the name under 120 characters";
   if (!d.theme.name.trim()) e.theme = "Pick a theme or type a new one";
   else if (d.theme.name.trim().length > 40) e.theme = "Keep theme names under 40 characters";
@@ -101,6 +111,7 @@ function toInput(d: Draft, themeId: string): SetInput {
   const price = parseINR(d.price);
   const value = parseINR(d.value);
   return {
+    kind: d.kind,
     name: d.name.trim().replace(/\s+/g, " "),
     setNumber: d.setNumber.trim(),
     themeId,
@@ -129,7 +140,7 @@ export function SetFormModal() {
       size="lg"
       tone={STEPS[step].tone}
       eyebrow={`Step ${step + 1} of ${STEPS.length} · ${STEPS[step].blurb}`}
-      title={form.editId ? "Edit set" : "Add a set"}
+      title={form.editId ? "Edit" : "Add to the vault"}
     >
       <SetFormBody key={`${form.editId ?? "new"}-${form.open}`} editId={form.editId} prefill={form.prefill} wishId={form.wishId} step={step} setStep={setStep} />
     </Modal>
@@ -160,6 +171,8 @@ function SetFormBody({
       const t = prefill.themeId ? themes.find((x) => x.id === prefill.themeId) : prefill.themeName ? themes.find((x) => normalise(x.name) === normalise(prefill.themeName!)) : undefined;
       return {
         ...emptyDraft(),
+        kind: prefill.kind ?? "set",
+        themeAuto: !prefill.themeId && Boolean(prefill.themeName),
         name: prefill.name ?? "",
         setNumber: prefill.setNumber ?? "",
         theme: t ? { themeId: t.id, name: t.name } : { themeId: null, name: prefill.themeName ?? "" },
@@ -203,6 +216,23 @@ function SetFormBody({
   const err = (k: keyof Draft) => (showErrors.has(k) ? errors[k] : undefined);
   const touch = (k: keyof Draft) => setShowErrors((s) => new Set(s).add(k));
 
+  /** Copies a catalog match into the form. The theme is only filled when the user has not picked one. */
+  const fillFrom = (m: Pickable) =>
+    setDraft((d) => ({
+      ...d,
+      name: m.name,
+      setNumber: m.num,
+      pieces: m.pieces ? String(m.pieces) : d.pieces,
+      themeAuto: d.themeAuto || !d.theme.name.trim(),
+      theme: d.theme.name.trim() && !d.themeAuto
+        ? d.theme
+        : (() => {
+            const name = vaultThemeName(m.theme);
+            const t = themes.find((x) => normalise(x.name) === normalise(name));
+            return t ? { themeId: t.id, name: t.name } : { themeId: null, name };
+          })(),
+    }));
+
   const stepHasErrors = (i: number) => (STEPS[i].fields as readonly (keyof Draft)[]).some((f) => errors[f]);
 
   const focusNext = useRef(false);
@@ -224,6 +254,10 @@ function SetFormBody({
     if (stepHasErrors(step)) return;
     go(Math.min(STEPS.length - 1, step + 1));
   };
+
+  const fig = draft.kind === "minifig";
+  // A known set number pulls in the minifigure list, so the box's figures can be added too.
+  const { data: figCatalog } = useFigs(!fig && !editing && /^[A-Za-z0-9.\-]{3,24}$/.test(draft.setNumber.trim()));
 
   const duplicates = useMemo(() => {
     const n = draft.setNumber.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -254,6 +288,23 @@ function SetFormBody({
       toast({ kind: "success", title: "Saved changes", body: delta ? `Purchase price ${delta > 0 ? "up" : "down"} ${formatINR(Math.abs(delta))}. Totals updated.` : `${input.name} is up to date.` });
     } else {
       const created = store.addSet(input);
+      const figs = input.kind === "minifig" ? [] : (figCatalog?.bySet.get(setKey(input.setNumber)) ?? []).filter((f) => draft.figs.includes(f.num));
+      for (const f of figs)
+        store.addSet({
+          kind: "minifig",
+          name: f.name,
+          setNumber: f.num,
+          themeId,
+          // Its pieces are already in the set's count.
+          pieces: null,
+          purchasePrice: null,
+          purchaseDate: input.purchaseDate,
+          seller: input.seller,
+          condition: input.condition,
+          marketValue: null,
+          notes: `Came with ${input.name}${input.setNumber ? ` (${input.setNumber})` : ""}. Its price is part of the set.`,
+          photoIds: [],
+        });
       if (wishId) store.deleteWish(wishId);
       try {
         localStorage.removeItem(DRAFT_KEY);
@@ -265,8 +316,8 @@ function SetFormBody({
       toast({
         kind: input.purchasePrice ? "cash" : "success",
         title: input.purchasePrice ? `${formatINR(input.purchasePrice)} into ${themeName}` : `${input.name} is in the vault`,
-        body: `${wishId ? "Moved from your wishlist. " : ""}Total spent is now ${formatINR(total)}.`,
-        link: { label: "View set", href: `/set?id=${created.id}` },
+        body: `${wishId ? "Moved from your wishlist. " : ""}${figs.length ? `Plus ${figs.length === 1 ? "1 minifig" : `${figs.length} minifigs`} from the box. ` : ""}Total spent is now ${formatINR(total)}.`,
+        link: { label: input.kind === "minifig" ? "View minifig" : "View set", href: `/set?id=${created.id}` },
       });
     }
     close();
@@ -345,34 +396,45 @@ function SetFormBody({
           >
             {step === 0 && (
               <>
-                <Field label="Set name" error={err("name")}>
+                <Segmented<ItemKind>
+                  label="What are you adding?"
+                  value={draft.kind}
+                  onChange={(kind) => setDraft((d) => ({ ...d, kind, figs: [] }))}
+                  options={[
+                    { value: "set", label: "A set" },
+                    { value: "minifig", label: "A minifigure" },
+                  ]}
+                />
+                <Field
+                  label={fig ? "Minifigure name" : "Set name"}
+                  error={err("name")}
+                  hint={fig ? "Start typing and pick from every LEGO minifigure, or type your own." : "Start typing and pick from every LEGO set, or type your own."}
+                >
                   {({ id, describedBy, invalid }) => (
-                    <input
+                    <NamePicker
+                      kind={draft.kind}
                       id={id}
-                      data-autofocus
-                      className="input font-display text-lg font-bold"
                       value={draft.name}
-                      onChange={(e) => set("name", e.target.value)}
+                      onChange={(v) => set("name", v)}
+                      onPick={fillFrom}
                       onBlur={() => touch("name")}
-                      placeholder="Lion Knights' Castle"
-                      aria-describedby={describedBy}
-                      aria-invalid={invalid || undefined}
-                      maxLength={140}
-                      autoComplete="off"
+                      placeholder={fig ? "Darth Vader, Batman, Spaceman…" : "Lion Knights' Castle"}
+                      describedBy={describedBy}
+                      invalid={invalid}
                     />
                   )}
                 </Field>
                 <Field label="Theme" error={err("theme")} hint="Pick one of yours, a common LEGO theme, or type your own.">
                   {({ id, describedBy, invalid }) => (
-                    <ThemeCombobox id={id} value={draft.theme} onChange={(v) => set("theme", v)} describedBy={describedBy} invalid={invalid} />
+                    <ThemeCombobox id={id} value={draft.theme} onChange={(v) => setDraft((d) => ({ ...d, theme: v, themeAuto: false }))} describedBy={describedBy} invalid={invalid} />
                   )}
                 </Field>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Field
-                    label="Set number"
+                    label={fig ? "Figure number" : "Set number"}
                     optional
                     error={err("setNumber")}
-                    hint={duplicates > 0 ? <span className="font-semibold text-blue">You already have {duplicates} of this set. Saving adds another copy.</span> : "Printed on the box, like 10305."}
+                    hint={duplicates > 0 ? <span className="font-semibold text-blue">You already have {duplicates} of these. Saving adds another copy.</span> : fig ? "Rebrickable's number, like fig-000123. Picking a name fills it." : "Printed on the box, like 10305."}
                   >
                     {({ id, describedBy, invalid }) => (
                       <input
@@ -381,29 +443,15 @@ function SetFormBody({
                         value={draft.setNumber}
                         onChange={(e) => set("setNumber", e.target.value)}
                         onBlur={() => touch("setNumber")}
-                        placeholder="10305"
+                        placeholder={fig ? "fig-000123" : "10305"}
                         aria-describedby={describedBy}
                         aria-invalid={invalid || undefined}
                         autoComplete="off"
                       />
                     )}
                   </Field>
-                  <CatalogMatch
-                    number={draft.setNumber}
-                    draft={draft}
-                    onFill={(m) =>
-                      setDraft((d) => ({
-                        ...d,
-                        name: m.name,
-                        pieces: m.pieces ? String(m.pieces) : d.pieces,
-                        theme: d.theme.name.trim() ? d.theme : (() => {
-                          const name = vaultThemeName(m.theme);
-                          const t = themes.find((x) => normalise(x.name) === normalise(name));
-                          return t ? { themeId: t.id, name: t.name } : { themeId: null, name };
-                        })(),
-                      }))
-                    }
-                  />
+                  <CatalogMatch draft={draft} onFill={fillFrom} />
+                  {!fig && !editing && figCatalog && <BoxFigs figs={figCatalog.bySet.get(setKey(draft.setNumber)) ?? []} picked={draft.figs} onChange={(next) => setDraft((d) => ({ ...d, figs: next(d.figs) }))} />}
                   <Field label="Pieces" optional error={err("pieces")}>
                     {({ id, describedBy, invalid }) => (
                       <input
@@ -586,11 +634,14 @@ function SummaryHint({ draft }: { draft: Draft }): ReactNode {
   return <p className="hidden text-sm text-ink/65 sm:block">{ready ? "Name and theme are enough. Save now or add details." : "Only name and theme are required."}</p>;
 }
 
-/** Looks the set number up in the public catalog and offers to fill in the name, theme and pieces. */
-function CatalogMatch({ number, draft, onFill }: { number: string; draft: Draft; onFill: (m: CatalogSet) => void }) {
+/** Looks the number up in the public catalog and offers to fill in the name, theme and pieces. */
+function CatalogMatch({ draft, onFill }: { draft: Draft; onFill: (m: Pickable) => void }) {
+  const number = draft.setNumber;
+  const fig = draft.kind === "minifig";
   const wanted = /^[A-Za-z0-9.\-]{3,24}$/.test(number.trim());
-  const { data: catalog } = useCatalog(wanted);
-  const match = wanted && catalog ? findSet(catalog, number) : undefined;
+  const sets = useCatalog(wanted && !fig);
+  const figs = useFigs(wanted && fig);
+  const match: Pickable | undefined = !wanted ? undefined : fig ? (figs.data ? findFig(figs.data, number) : undefined) : sets.data ? findSet(sets.data, number) : undefined;
   const filled = match && draft.name === match.name && (!match.pieces || draft.pieces === String(match.pieces));
   return (
     <AnimatePresence initial={false}>
@@ -608,10 +659,7 @@ function CatalogMatch({ number, draft, onFill }: { number: string; draft: Draft;
           <div className="min-w-0 flex-1">
             <p className="mono-meta text-[0.62rem] text-ink/60">Found in the catalog · {match.num}</p>
             <p className="truncate font-display font-extrabold leading-tight">{match.name}</p>
-            <p className="text-[0.8rem] text-ink/70">
-              {match.theme} · {match.year}
-              {match.pieces ? ` · ${match.pieces.toLocaleString("en-IN")} pieces` : ""}
-            </p>
+            <p className="text-[0.8rem] text-ink/70">{[match.theme, match.year || null, match.pieces ? `${match.pieces.toLocaleString("en-IN")} pieces` : null].filter(Boolean).join(" · ")}</p>
           </div>
           {filled ? (
             <span className="chip shrink-0 bg-mint">
@@ -625,5 +673,57 @@ function CatalogMatch({ number, draft, onFill }: { number: string; draft: Draft;
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+/** The minifigures that come in this set. Ticked ones are added as their own vault entries, at no extra cost. */
+function BoxFigs({ figs, picked, onChange }: { figs: CatalogFig[]; picked: string[]; onChange: (next: (picked: string[]) => string[]) => void }) {
+  if (!figs.length) return null;
+  const all = figs.every((f) => picked.includes(f.num));
+  const toggle = (num: string) => onChange((cur) => (cur.includes(num) ? cur.filter((n) => n !== num) : [...cur, num]));
+  return (
+    <motion.fieldset
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 420, damping: 30 }}
+      className="min-w-0 rounded-xl border-[2.5px] border-dashed border-ink bg-purple/15 p-3 sm:order-last sm:col-span-2"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <legend className="field-label float-left mb-0">Comes with {figs.length === 1 ? "1 minifigure" : `${figs.length} minifigures`}</legend>
+        <button type="button" className="chip" onClick={() => onChange(() => (all ? [] : figs.map((f) => f.num)))}>
+          {all ? "Untick all" : "Add them all"}
+        </button>
+      </div>
+      <p className="mt-1 text-[0.8rem] text-ink/70">Tick any to add them to the vault as minifigures too. They cost nothing extra, since the set price covers them.</p>
+      <ul className="mt-3 flex gap-2 overflow-x-auto px-1 pb-1 pt-2">
+        {figs.map((f) => {
+          const on = picked.includes(f.num);
+          return (
+            <li key={f.num} className="shrink-0">
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={on}
+                onClick={() => toggle(f.num)}
+                title={f.name}
+                className={cn(
+                  "relative flex w-24 flex-col items-center gap-1 rounded-lg border-[2.5px] border-ink p-1.5 text-center transition-transform",
+                  on ? "-rotate-2 bg-yellow shadow-comic-sm" : "bg-paper hover:-translate-y-0.5",
+                )}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={setImage(f.num)} alt="" loading="lazy" className="h-16 w-full object-contain" />
+                <span className="line-clamp-2 text-[0.7rem] font-semibold leading-tight">{f.name}</span>
+                {on && (
+                  <span className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full border-2 border-ink bg-mint">
+                    <Check size={13} strokeWidth={4} aria-hidden />
+                  </span>
+                )}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </motion.fieldset>
   );
 }

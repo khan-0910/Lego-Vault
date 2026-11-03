@@ -8,7 +8,7 @@ import { Delta, SetCover } from "@/components/sets/SetBits";
 import { Starburst } from "@/components/ui/Decor";
 import { ThemeDot } from "@/components/ui/ThemeBadge";
 import { ThemeIcon } from "@/components/ui/ThemeIcon";
-import { type BoardMode, type BoardRow, type ThemeSlice, type TimelineGroup } from "@/lib/calc";
+import { type BoardMode, type BoardRow, itemsLabel, type ThemeSlice, type TimelineGroup } from "@/lib/calc";
 import { compactINR, formatINR, formatPct } from "@/lib/money";
 import type { LegoSet, Theme } from "@/lib/types";
 import { dropLand } from "@/lib/motion";
@@ -89,7 +89,7 @@ export function ThemeBreakdown({
                     />
                   </span>
                   <span className="mono-meta w-24 shrink-0 text-right text-[0.62rem] text-ink/60">
-                    {formatPct(s.share * 100)} · {pluralise(s.count, "set")}
+                    {formatPct(s.share * 100)} · {itemsLabel(s.count, s.figs)}
                   </span>
                 </span>
               </span>

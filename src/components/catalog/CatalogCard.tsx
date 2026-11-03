@@ -10,6 +10,7 @@ import { formatNumber } from "@/lib/money";
 import { dropLand } from "@/lib/motion";
 import { useVault } from "@/lib/store";
 import { toast, useUI } from "@/lib/ui";
+import type { ItemKind } from "@/lib/types";
 import { cn, normalise } from "@/lib/utils";
 
 const TONES = ["#FFD447", "#62D2FF", "#FF9FD0", "#7BF1C8", "#A77BFF", "#FF9548"];
@@ -48,8 +49,8 @@ export function useOwnedKeys() {
 export function useCatalogActions() {
   const openAdd = useUI((s) => s.openAdd);
   return {
-    add: (s: HighlightSet) => openAdd({ name: s.name, setNumber: s.num, themeName: vaultThemeName(s.theme), pieces: s.pieces || null }),
-    wish: (s: HighlightSet) => {
+    add: (s: HighlightSet, kind: ItemKind = "set") => openAdd({ kind, name: s.name, setNumber: s.num, themeName: vaultThemeName(s.theme), pieces: s.pieces || null }),
+    wish: (s: HighlightSet, kind: ItemKind = "set") => {
       const store = useVault.getState();
       const themeName = normalise(vaultThemeName(s.theme));
       store.addWish({
@@ -58,7 +59,7 @@ export function useCatalogActions() {
         themeId: store.themes.find((t) => normalise(t.name) === themeName)?.id ?? null,
         targetPrice: null,
         priority: 2,
-        link: `https://rebrickable.com/sets/${s.num}/`,
+        link: `https://rebrickable.com/${kind === "minifig" ? "minifigs" : "sets"}/${s.num}/`,
         notes: "",
       });
       toast({ kind: "success", title: "On the wishlist", body: `${s.name} is waiting for you. Add a target price any time.`, link: { label: "Open wishlist", href: "/wishlist" } });
@@ -66,19 +67,36 @@ export function useCatalogActions() {
   };
 }
 
-export function CatalogCard({ set, index = 0, owned, wished, thisYear }: { set: HighlightSet; index?: number; owned: boolean; wished: boolean; thisYear: number }) {
+export function CatalogCard({
+  set,
+  index = 0,
+  owned,
+  wished,
+  thisYear,
+  kind = "set",
+}: {
+  set: HighlightSet & { sets?: string[] };
+  index?: number;
+  owned: boolean;
+  wished: boolean;
+  thisYear: number;
+  kind?: ItemKind;
+}) {
   const { add, wish } = useCatalogActions();
   const land = dropLand(0.05 + (index % 6) * 0.06, -60);
   const upcoming = set.year > thisYear;
+  const fig = kind === "minifig";
   return (
     <motion.article initial={land.initial} whileInView={land.animate} viewport={{ once: true, margin: "-20px" }} transition={land.transition} style={{ originY: 1 }} className="group relative mt-3">
       <StudRow className="left-5 z-10" count={3} color={toneFor(set.num)} />
       <div className="panel hover-bounce flex h-full flex-col overflow-hidden transition-[transform,box-shadow] hover:-translate-y-1.5 hover:-rotate-1 hover:shadow-comic-lg">
         <div className="relative aspect-[4/3] border-b-[3px] border-ink">
           <CatalogImage num={set.num} name={set.name} className="h-full w-full" />
-          <span className={cn("absolute left-2 top-2 rounded-md border-2 border-ink px-1.5 py-0.5 font-mono text-[0.68rem] font-extrabold", upcoming ? "bg-red text-paper" : "bg-yellow")}>
-            {upcoming ? `COMING ${set.year}` : set.year}
-          </span>
+          {set.year > 0 && (
+            <span className={cn("absolute left-2 top-2 rounded-md border-2 border-ink px-1.5 py-0.5 font-mono text-[0.68rem] font-extrabold", upcoming ? "bg-red text-paper" : "bg-yellow")}>
+              {upcoming ? `COMING ${set.year}` : set.year}
+            </span>
+          )}
           {(owned || wished) && (
             <span className={cn("absolute right-2 top-2 -rotate-6 rounded-md border-2 border-ink px-1.5 py-0.5 font-mono text-[0.66rem] font-extrabold shadow-comic-sm", owned ? "bg-mint" : "bg-pink")}>
               {owned ? "IN VAULT" : "WISHED"}
@@ -90,12 +108,14 @@ export function CatalogCard({ set, index = 0, owned, wished, thisYear }: { set: 
             {set.num} · {set.theme}
           </p>
           <h3 className="line-clamp-2 font-display text-[1.02rem] font-extrabold leading-tight">{set.name}</h3>
-          <p className="text-sm text-ink/70">{set.pieces ? `${formatNumber(set.pieces)} pieces` : "Pieces not announced"}</p>
+          <p className="text-sm text-ink/70">
+            {fig ? (set.sets?.length ? `In ${set.sets.length === 1 ? "1 set" : `${set.sets.length} sets`}` : "Not in any set") : set.pieces ? `${formatNumber(set.pieces)} pieces` : "Pieces not announced"}
+          </p>
           <div className="mt-auto flex gap-2 pt-2">
-            <button type="button" className="btn btn-sm btn-red flex-1" onClick={() => add(set)} aria-label={`Add ${set.name} to the vault`}>
+            <button type="button" className="btn btn-sm btn-red flex-1" onClick={() => add(set, kind)} aria-label={`Add ${set.name} to the vault`}>
               {owned ? <Check size={15} strokeWidth={3} /> : <Plus size={15} strokeWidth={3} />} {owned ? "Add again" : "Add"}
             </button>
-            <button type="button" className="btn btn-sm btn-icon bg-pink" onClick={() => wish(set)} disabled={wished} aria-label={wished ? `${set.name} is on your wishlist` : `Add ${set.name} to the wishlist`} title={wished ? "On your wishlist" : "Add to wishlist"}>
+            <button type="button" className="btn btn-sm btn-icon bg-pink" onClick={() => wish(set, kind)} disabled={wished} aria-label={wished ? `${set.name} is on your wishlist` : `Add ${set.name} to the wishlist`} title={wished ? "On your wishlist" : "Add to wishlist"}>
               <Gift size={16} strokeWidth={2.8} />
             </button>
           </div>

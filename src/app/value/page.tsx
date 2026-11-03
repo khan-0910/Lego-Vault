@@ -18,6 +18,7 @@ import {
   type BoardMode,
   computeRealised,
   computeStats,
+  itemsLabel,
   DEFAULT_FILTERS,
   filterSets,
   leaderboard,
@@ -167,11 +168,11 @@ function ValueTracker() {
                 </AnimatePresence>
               </div>
               <p className="mt-2 font-semibold">
-                {stats.pricedCount < stats.count ? `${pluralise(stats.pricedCount, "set")} with a price. ${pluralise(stats.count - stats.pricedCount, "set")} without one ${stats.count - stats.pricedCount === 1 ? "adds" : "add"} ₹0.` : `Every one of ${pluralise(stats.count, "set")} priced.`}
+                {stats.pricedCount < stats.count ? `${pluralise(stats.pricedCount, "set")} with a price. ${pluralise(stats.count - stats.pricedCount, "set")} without one ${stats.count - stats.pricedCount === 1 ? "adds" : "add"} ₹0.` : `Every one of ${itemsLabel(stats.count, stats.figCount)} priced.`}
               </p>
               <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
-                  ["Sets", formatNumber(stats.count)],
+                  stats.figCount ? ["Sets · figs", `${formatNumber(stats.setCount)} · ${formatNumber(stats.figCount)}`] : ["Sets", formatNumber(stats.count)],
                   ["Pieces", formatNumber(stats.totalPieces)],
                   ["Avg / set", formatINR(stats.avgPrice)],
                   ["Per piece", formatINR(stats.pricePerPiece)],

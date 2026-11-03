@@ -1,10 +1,11 @@
 import { create } from "zustand";
-import type { Paise } from "./types";
+import type { ItemKind, Paise } from "./types";
 import { uid } from "./utils";
 
 /** Transient UI state. Never persisted. */
 
 export interface SetPrefill {
+  kind?: ItemKind;
   name?: string;
   setNumber?: string;
   themeId?: string | null;

@@ -24,7 +24,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type ReactNode, Suspense, useId, useMemo, useState } from "react";
 import { DropZone, PhotoThumb, storeFiles } from "@/components/sets/PhotoUploader";
-import { Delta, SetArt, SoldStamp } from "@/components/sets/SetBits";
+import { Delta, FigTag, SetArt, SoldStamp } from "@/components/sets/SetBits";
 import { Field, MoneyInput } from "@/components/ui/Fields";
 import { ConfirmDialog, Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/States";
@@ -111,9 +111,10 @@ function Dossier({ set, theme }: { set: LegoSet; theme: Theme }) {
             </Link>
             <ConditionStamp condition={set.condition} size="lg" className="rotate-2" />
             {set.status === "sold" && <SoldStamp className="text-base" />}
+            {set.kind === "minifig" && <FigTag className="text-[0.8rem]" />}
           </motion.div>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.08 }} className="mt-4 font-mono text-lg font-bold tracking-wider text-ink/70">
-            {set.setNumber ? `#${set.setNumber}` : "No set number"}
+            {set.setNumber ? `#${set.setNumber}` : set.kind === "minifig" ? "No figure number" : "No set number"}
             {set.pieces != null && <span> · {formatNumber(set.pieces)} pieces</span>}
           </motion.p>
           <motion.h1
@@ -362,7 +363,7 @@ function Tabs({ tab, setTab, counts }: { tab: Tab; setTab: (t: Tab) => void; cou
 function Overview({ set, theme }: { set: LegoSet; theme: Theme }) {
   const rows: Array<[string, ReactNode]> = [
     ["Theme", theme.name],
-    ["Set number", set.setNumber || "—"],
+    [set.kind === "minifig" ? "Figure number" : "Set number", set.setNumber || "—"],
     ["Pieces", formatNumber(set.pieces)],
     ["Purchase date", formatDate(set.purchaseDate, "Not recorded")],
     ["Seller", set.seller || "—"],

@@ -146,22 +146,24 @@ export function searchCatalog(sets: CatalogSet[], query: CatalogQuery, thisYear:
   return out.sort((a, b) => (exact ? Number(setKey(b.num) === exact) - Number(setKey(a.num) === exact) : 0) || cmp[query.sort](a, b));
 }
 
-let pending: Promise<Catalog> | null = null;
-
-/** Loads once per page view (about 1.4 MB, cached by the browser after that). */
-export function loadCatalog(): Promise<Catalog> {
-  pending ??= fetch(catalogFile("sets.json"))
-    .then((r) => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json() as Promise<RawCatalog>;
-    })
-    .then(buildCatalog)
-    .catch((e) => {
-      pending = null;
-      throw e;
-    });
-  return pending;
+/** Fetches a catalog file once per page view (the browser caches it after that); a failure can be retried. */
+function once<R, T>(file: string, build: (raw: R) => T): () => Promise<T> {
+  let pending: Promise<T> | null = null;
+  return () =>
+    (pending ??= fetch(catalogFile(file))
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json() as Promise<R>;
+      })
+      .then(build)
+      .catch((e) => {
+        pending = null;
+        throw e;
+      }));
 }
+
+/** About 1.4 MB. */
+export const loadCatalog = once("sets.json", buildCatalog);
 
 type Loaded<T> = { data: T | null; error: boolean; retry: () => void };
 
@@ -184,21 +186,112 @@ function useLoad<T>(load: () => Promise<T>, enabled: boolean): Loaded<T> {
 
 export const useCatalog = (enabled = true) => useLoad(loadCatalog, enabled);
 
-let pendingHighlights: Promise<Highlights> | null = null;
-function loadHighlights(): Promise<Highlights> {
-  pendingHighlights ??= fetch(catalogFile("highlights.json"))
-    .then((r) => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json() as Promise<Highlights>;
-    })
-    .catch((e) => {
-      pendingHighlights = null;
-      throw e;
-    });
-  return pendingHighlights;
+const loadHighlights = once("highlights.json", (raw: Highlights) => raw);
+export const useHighlights = () => useLoad(loadHighlights, true);
+
+/* ── Minifigures ── */
+
+export interface CatalogFig {
+  /** Rebrickable number, like "fig-000123". */
+  num: string;
+  name: string;
+  pieces: number;
+  /** Top-level theme of the first set it came in. */
+  theme: string;
+  /** Year of the first set it came in, 0 when it is not in any set. */
+  year: number;
+  /** Set numbers it comes in, oldest first. */
+  sets: string[];
 }
 
-export const useHighlights = () => useLoad(loadHighlights, true);
+export interface FigCatalog {
+  figs: CatalogFig[];
+  themes: Array<{ name: string; count: number }>;
+  years: Array<{ year: number; count: number }>;
+  byKey: Map<string, CatalogFig>;
+  bySet: Map<string, CatalogFig[]>;
+}
+
+type RawFigs = { themes: string[]; figs: Array<[string, string, number, number, number, string[]]> };
+
+export function buildFigs(raw: RawFigs): FigCatalog {
+  const figs = raw.figs.map(([num, name, pieces, theme, year, sets]) => ({ num, name, pieces, theme: raw.themes[theme] ?? "Other", year, sets }));
+  const byKey = new Map(figs.map((f) => [f.num.toLowerCase(), f]));
+  const bySet = new Map<string, CatalogFig[]>();
+  const counts = new Map<string, number>();
+  const perYear = new Map<number, number>();
+  for (const f of figs) {
+    for (const s of f.sets) (bySet.get(setKey(s)) ?? bySet.set(setKey(s), []).get(setKey(s))!).push(f);
+    if (!f.year) continue;
+    counts.set(f.theme, (counts.get(f.theme) ?? 0) + 1);
+    perYear.set(f.year, (perYear.get(f.year) ?? 0) + 1);
+  }
+  const first = Math.min(...perYear.keys());
+  const last = Math.max(...perYear.keys());
+  return {
+    figs,
+    byKey,
+    bySet,
+    themes: [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name)),
+    years: perYear.size ? Array.from({ length: last - first + 1 }, (_, i) => ({ year: first + i, count: perYear.get(first + i) ?? 0 })) : [],
+  };
+}
+
+/** About 1.4 MB, loaded only when a minifigure is being looked up. */
+export const loadFigs = once("minifigs.json", buildFigs);
+export const useFigs = (enabled = true) => useLoad(loadFigs, enabled);
+
+export const isFigNumber = (s: string) => /^fig-\d+$/i.test(s.trim());
+export const findFig = (figs: FigCatalog, input: string) => figs.byKey.get(input.trim().toLowerCase());
+
+export interface FigQuery {
+  q: string;
+  theme: string | null;
+  year: number | null;
+  sort: "newest" | "oldest" | "name";
+}
+
+export const DEFAULT_FIG_QUERY: FigQuery = { q: "", theme: null, year: null, sort: "newest" };
+
+export function searchFigs(figs: CatalogFig[], query: FigQuery): CatalogFig[] {
+  const words = query.q.toLowerCase().split(/\s+/).filter(Boolean);
+  const out = figs.filter((f) => {
+    if (query.theme && f.theme !== query.theme) return false;
+    if (query.year != null && f.year !== query.year) return false;
+    if (!words.length) return true;
+    const hay = `${f.num} ${f.name} ${f.theme} ${f.sets.join(" ")}`.toLowerCase();
+    return words.every((w) => hay.includes(w));
+  });
+  const undated = (f: CatalogFig) => (f.year ? 0 : 1);
+  const cmp = {
+    newest: (a: CatalogFig, b: CatalogFig) => undated(a) - undated(b) || b.year - a.year,
+    oldest: (a: CatalogFig, b: CatalogFig) => undated(a) - undated(b) || a.year - b.year,
+    name: (a: CatalogFig, b: CatalogFig) => a.name.localeCompare(b.name),
+  }[query.sort];
+  return out.sort(cmp);
+}
+
+/**
+ * Best name matches for the add form: every word must appear; names that start with
+ * what was typed come first, then names with a word starting with it, then newer ones.
+ */
+export function suggestByName<T extends { name: string; num: string; year: number }>(items: T[], typed: string, limit = 8): T[] {
+  const q = typed.trim().toLowerCase();
+  const words = q.split(/\s+/).filter(Boolean);
+  if (q.length < 2) return [];
+  const scored: Array<{ item: T; score: number }> = [];
+  for (const item of items) {
+    const name = item.name.toLowerCase();
+    if (!words.every((w) => name.includes(w) || item.num.toLowerCase().startsWith(w))) continue;
+    const rank = name.startsWith(q) ? 0 : name.split(/[^a-z0-9]+/).some((w) => w.startsWith(words[0])) ? 1 : 2;
+    const score = rank * 10_000 - item.year;
+    scored.push({ item, score });
+  }
+  return scored
+    .sort((a, b) => a.score - b.score || a.item.name.length - b.item.name.length)
+    .slice(0, limit)
+    .map((s) => s.item);
+}
 
 /** Rebrickable theme names that differ from the names collectors (and our starter themes) use. */
 const THEME_ALIASES: Record<string, string> = {

@@ -119,6 +119,17 @@ export function FilterBar({
           ]}
         />
         <span className="mx-1 hidden h-6 w-[2px] bg-ink/20 sm:block" aria-hidden />
+        <Segmented<SetFilters["kind"]>
+          label="Type"
+          value={filters.kind}
+          onChange={(kind) => set({ kind })}
+          options={[
+            { value: "all", label: "Everything" },
+            { value: "set", label: "Sets" },
+            { value: "minifig", label: "Minifigs" },
+          ]}
+        />
+        <span className="mx-1 hidden h-6 w-[2px] bg-ink/20 sm:block" aria-hidden />
         <Popover label="Themes" count={filters.themeIds.length}>
           {themes.length === 0 ? (
             <p className="text-sm">No themes yet.</p>
