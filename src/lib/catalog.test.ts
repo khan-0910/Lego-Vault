@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCatalog, buildFigs, DEFAULT_FIG_QUERY, DEFAULT_QUERY, findFig, findSet, numbersIn, searchCatalog, searchFigs, setKey, suggestByName } from "./catalog";
+import { buildCatalog, buildFigs, DEFAULT_FIG_QUERY, DEFAULT_QUERY, findFig, ebaySoldUrl, findSet, numbersIn, searchCatalog, searchFigs, setKey, suggestByName } from "./catalog";
 
 const catalog = buildCatalog({
   themes: [
@@ -74,5 +74,26 @@ describe("minifigures", () => {
     expect(suggestByName(figs.figs, "vader").map((f) => f.name)).toEqual(["Vader's TIE Pilot", "Darth Vader"]);
     expect(suggestByName(figs.figs, "v")).toEqual([]);
     expect(suggestByName(figs.figs, "knight lion").map((f) => f.num)).toEqual(["fig-000002"]);
+  });
+});
+
+describe("ebaySoldUrl", () => {
+  const query = (item: Parameters<typeof ebaySoldUrl>[0]) => new URL(ebaySoldUrl(item)).searchParams;
+
+  it("searches sold listings by box number and matches the condition", () => {
+    const sealed = query({ name: "Lion Knights' Castle", setNumber: "10305-1", condition: "sealed" });
+    expect(sealed.get("_nkw")).toBe("LEGO 10305");
+    expect(sealed.get("LH_Sold")).toBe("1");
+    expect(sealed.get("LH_ItemCondition")).toBe("1000");
+    expect(query({ name: "Castle", setNumber: "10305", condition: "built" }).get("LH_ItemCondition")).toBe("3000");
+  });
+
+  it("keeps real variants, and falls back to the name", () => {
+    expect(query({ name: "Castle", setNumber: "10305-2", condition: "used" }).get("_nkw")).toBe("LEGO 10305-2");
+    expect(query({ name: "My Castle", setNumber: "", condition: "used" }).get("_nkw")).toBe("LEGO My Castle");
+  });
+
+  it("searches minifigures by the short part of their name", () => {
+    expect(query({ kind: "minifig", name: "Forestman, Quiver, Thin Moustache", setNumber: "fig-001234", condition: "used" }).get("_nkw")).toBe("LEGO minifigure Forestman");
   });
 });

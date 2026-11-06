@@ -304,5 +304,17 @@ const THEME_ALIASES: Record<string, string> = {
 };
 export const vaultThemeName = (theme: string) => THEME_ALIASES[theme] ?? theme;
 
+/**
+ * eBay's own sold listings for an item, for checking prices by hand. Sealed goes to
+ * New and every other condition to Used. Figure numbers are Rebrickable's, so
+ * minifigures search by name, and box numbers lose the "-1" sellers never write.
+ */
+export function ebaySoldUrl(item: { kind?: "set" | "minifig"; name: string; setNumber: string; condition: string }): string {
+  const fig = item.kind === "minifig";
+  const words = fig ? `minifigure ${item.name.split(",")[0]}` : item.setNumber.trim().replace(/-1$/, "") || item.name;
+  const params = new URLSearchParams({ _nkw: `LEGO ${words}`, LH_Sold: "1", LH_Complete: "1", LH_ItemCondition: item.condition === "sealed" ? "1000" : "3000" });
+  return `https://www.ebay.com/sch/i.html?${params}`;
+}
+
 /** Set numbers mentioned in a headline, like "Review: 75642 Showdown…". */
 export const numbersIn = (title: string) => [...new Set(title.match(/\b\d{4,6}(?:-\d)?\b/g) ?? [])].filter((n) => !/^(19|20)\d\d$/.test(n));

@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleDollarSign,
+  ExternalLink,
   Pencil,
   Plus,
   RotateCcw,
@@ -30,6 +31,7 @@ import { ConfirmDialog, Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/States";
 import { ConditionStamp, ThemeBadge } from "@/components/ui/ThemeBadge";
 import { gainOf, pricePerPieceOf } from "@/lib/calc";
+import { ebaySoldUrl } from "@/lib/catalog";
 import { useThemes, usePhotoURL } from "@/lib/hooks";
 import { compactINR, formatINR, formatNumber, paiseToInput, parseINR } from "@/lib/money";
 import { useVault } from "@/lib/store";
@@ -168,6 +170,9 @@ function Dossier({ set, theme }: { set: LegoSet; theme: Theme }) {
                 <TrendingUp size={17} strokeWidth={2.8} /> Update value
               </button>
             )}
+            <a href={ebaySoldUrl(set)} target="_blank" rel="noopener noreferrer" className="btn" title={`Opens eBay's sold ${set.condition === "sealed" ? "new" : "used"} listings in a new tab`}>
+              <ExternalLink size={17} strokeWidth={2.8} /> Check eBay sold prices
+            </a>
             {set.status === "owned" ? (
               <button type="button" className="btn" onClick={() => setSelling(true)}>
                 <BadgeIndianRupee size={17} strokeWidth={2.8} /> Mark sold
