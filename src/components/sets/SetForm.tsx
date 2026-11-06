@@ -7,7 +7,7 @@ import { Delta } from "@/components/sets/SetBits";
 import { Field, MoneyInput, Segmented } from "@/components/ui/Fields";
 import { Modal } from "@/components/ui/Modal";
 import { ThemeCombobox, type ThemePick } from "@/components/ui/ThemeCombobox";
-import { computeStats, inScope } from "@/lib/calc";
+import { builtEstimate, computeStats, inScope } from "@/lib/calc";
 import { DRAFT_KEY } from "@/lib/hooks";
 import { formatINR, paiseToInput, parseINR } from "@/lib/money";
 import { useVault } from "@/lib/store";
@@ -22,6 +22,9 @@ import { type CatalogFig, findFig, findSet, setImage, setKey, useCatalog, useFig
 
 interface Draft {
   kind: ItemKind;
+  mrp: string;
+  /** The value box still follows the built-set default; typing in it stops that. */
+  valueAuto: boolean;
   name: string;
   setNumber: string;
   theme: ThemePick;
@@ -43,13 +46,15 @@ type Errors = Partial<Record<keyof Draft, string>>;
 
 const STEPS = [
   { title: "The basics", blurb: "What did you get?", tone: "#FFD447", fields: ["name", "theme", "setNumber", "pieces"] },
-  { title: "The deal", blurb: "What did it cost?", tone: "#7BF1C8", fields: ["price", "date", "seller", "condition"] },
+  { title: "The deal", blurb: "What did it cost?", tone: "#7BF1C8", fields: ["mrp", "price", "date", "seller", "condition"] },
   { title: "The value", blurb: "What is it worth?", tone: "#FF9FD0", fields: ["value", "notes"] },
   { title: "Photos", blurb: "Show it off", tone: "#62D2FF", fields: ["photoIds"] },
 ] as const;
 
 const emptyDraft = (): Draft => ({
   kind: "set",
+  mrp: "",
+  valueAuto: true,
   name: "",
   setNumber: "",
   theme: { themeId: null, name: "" },
@@ -67,6 +72,8 @@ const emptyDraft = (): Draft => ({
 function fromSet(s: LegoSet, themeName: string): Draft {
   return {
     kind: s.kind ?? "set",
+    mrp: paiseToInput(s.mrp ?? null),
+    valueAuto: s.marketValue == null,
     name: s.name,
     setNumber: s.setNumber,
     theme: { themeId: s.themeId, name: themeName },
@@ -82,6 +89,14 @@ function fromSet(s: LegoSet, themeName: string): Draft {
   };
 }
 
+/** Keeps the value box on the built-set default until the user types their own. */
+function withAutoValue(d: Draft): Draft {
+  if (!d.valueAuto) return d;
+  const mrp = parseINR(d.mrp);
+  const built = d.kind === "set" && d.condition === "built" && mrp.ok && mrp.value != null && mrp.value > 0;
+  return { ...d, value: built ? paiseToInput(builtEstimate(mrp.value!)) : "" };
+}
+
 function validate(d: Draft): Errors {
   const e: Errors = {};
   if (!d.name.trim()) e.name = d.kind === "minifig" ? "Give the minifigure a name, like “Darth Vader”" : "Give the set a name, like “Lion Knights’ Castle”";
@@ -93,6 +108,8 @@ function validate(d: Draft): Errors {
     const n = Number(d.pieces.replace(/,/g, ""));
     if (!Number.isInteger(n) || n < 0 || n > 100_000) e.pieces = "Use a whole number of pieces";
   }
+  const mrp = parseINR(d.mrp);
+  if (!mrp.ok) e.mrp = mrp.error;
   const price = parseINR(d.price);
   if (!price.ok) e.price = price.error;
   const value = parseINR(d.value);
@@ -110,8 +127,10 @@ function validate(d: Draft): Errors {
 function toInput(d: Draft, themeId: string): SetInput {
   const price = parseINR(d.price);
   const value = parseINR(d.value);
+  const mrp = parseINR(d.mrp);
   return {
     kind: d.kind,
+    mrp: d.kind === "set" && mrp.ok ? mrp.value : null,
     name: d.name.trim().replace(/\s+/g, " "),
     setNumber: d.setNumber.trim(),
     themeId,
@@ -183,7 +202,10 @@ function SetFormBody({
     }
     try {
       const saved = localStorage.getItem(DRAFT_KEY);
-      if (saved) return { ...emptyDraft(), ...(JSON.parse(saved) as Partial<Draft>) };
+      if (saved) {
+        const old = JSON.parse(saved) as Partial<Draft>;
+        return { ...emptyDraft(), valueAuto: !old.value, ...old };
+      }
     } catch {
       /* corrupt draft: start clean */
     }
@@ -215,6 +237,7 @@ function SetFormBody({
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft((d) => ({ ...d, [k]: v }));
   const err = (k: keyof Draft) => (showErrors.has(k) ? errors[k] : undefined);
   const touch = (k: keyof Draft) => setShowErrors((s) => new Set(s).add(k));
+  const setValue = (v: string) => setDraft((d) => ({ ...d, value: v, valueAuto: false }));
 
   /** Copies a catalog match into the form. The theme is only filled when the user has not picked one. */
   const fillFrom = (m: Pickable) =>
@@ -399,7 +422,7 @@ function SetFormBody({
                 <Segmented<ItemKind>
                   label="What are you adding?"
                   value={draft.kind}
-                  onChange={(kind) => setDraft((d) => ({ ...d, kind, figs: [] }))}
+                  onChange={(kind) => setDraft((d) => withAutoValue({ ...d, kind, figs: [] }))}
                   options={[
                     { value: "set", label: "A set" },
                     { value: "minifig", label: "A minifigure" },
@@ -473,6 +496,13 @@ function SetFormBody({
 
             {step === 1 && (
               <>
+                {!fig && (
+                  <Field label="MRP" optional error={err("mrp")} hint="The price on the box. Built sets start with an estimated value of 40% of this.">
+                    {({ id, describedBy, invalid }) => (
+                      <MoneyInput id={id} value={draft.mrp} onChange={(v) => setDraft((d) => withAutoValue({ ...d, mrp: v }))} onBlur={() => touch("mrp")} describedBy={describedBy} invalid={invalid} />
+                    )}
+                  </Field>
+                )}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Field label="Purchase price" optional error={err("price")} hint="Counts toward your total spent. Try 34999, 35k or 1.2L.">
                     {({ id, describedBy, invalid }) => (
@@ -534,7 +564,7 @@ function SetFormBody({
                           type="button"
                           role="radio"
                           aria-checked={on}
-                          onClick={() => set("condition", c)}
+                          onClick={() => setDraft((d) => withAutoValue({ ...d, condition: c }))}
                           className={cn(
                             "rounded-xl border-[2.5px] border-ink px-2 py-2.5 text-left transition-transform",
                             on ? "shadow-comic-sm" : "bg-paper hover:-translate-y-0.5",
@@ -558,19 +588,23 @@ function SetFormBody({
                   label="Estimated market value"
                   optional
                   error={err("value")}
-                  hint="Your own estimate of what it would sell for today. BRICKVAULT does not fetch market prices, so this stays an estimate."
+                  hint={
+                    draft.valueAuto && draft.value
+                      ? "Started at 40% of MRP because it is built. Change it if this set is rare or worth more."
+                      : "Your own estimate of what it would sell for today. BRICKVAULT does not fetch market prices, so this stays an estimate."
+                  }
                 >
                   {({ id, describedBy, invalid }) => (
                     <div className="space-y-2">
-                      <MoneyInput id={id} data-autofocus value={draft.value} onChange={(v) => set("value", v)} onBlur={() => touch("value")} describedBy={describedBy} invalid={invalid} />
+                      <MoneyInput id={id} data-autofocus value={draft.value} onChange={setValue} onBlur={() => touch("value")} describedBy={describedBy} invalid={invalid} />
                       <div className="flex flex-wrap items-center gap-2">
                         {price.ok && price.value != null && (
-                          <button type="button" className="chip" onClick={() => set("value", paiseToInput(price.value))}>
+                          <button type="button" className="chip" onClick={() => setValue(paiseToInput(price.value))}>
                             Same as paid
                           </button>
                         )}
                         {draft.value && (
-                          <button type="button" className="chip" onClick={() => set("value", "")}>
+                          <button type="button" className="chip" onClick={() => setValue("")}>
                             No estimate
                           </button>
                         )}

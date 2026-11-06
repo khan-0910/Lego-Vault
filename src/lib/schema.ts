@@ -20,6 +20,7 @@ const event = z.object({
 export const setSchema = z.object({
   id: z.string().min(1),
   kind: z.enum(["set", "minifig"]).optional(),
+  mrp: paise.nullable().optional(),
   name: z.string().trim().min(1).max(120),
   setNumber: z.string().max(24).default(""),
   themeId: z.string().min(1),

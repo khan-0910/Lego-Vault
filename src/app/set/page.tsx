@@ -373,6 +373,7 @@ function Overview({ set, theme }: { set: LegoSet; theme: Theme }) {
     ["Purchase date", formatDate(set.purchaseDate, "Not recorded")],
     ["Seller", set.seller || "—"],
     ["Price paid", formatINR(set.purchasePrice, { fallback: "Not recorded" })],
+    ...(set.mrp != null ? ([["MRP", formatINR(set.mrp)]] as Array<[string, ReactNode]>) : []),
     ["Estimated value", set.marketValue != null ? `${formatINR(set.marketValue)}${set.marketValueAt ? ` (as of ${formatDate(set.marketValueAt)})` : ""}` : "No estimate"],
     ["Status", set.status === "sold" ? `Sold${set.saleDate ? ` on ${formatDate(set.saleDate)}` : ""}` : "In the vault"],
     ["Added", formatDate(set.createdAt)],

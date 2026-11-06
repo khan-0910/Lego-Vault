@@ -67,6 +67,11 @@ export function gainOf(set: LegoSet): { delta: Paise; pct: number | null } | nul
   return { delta, pct: set.purchasePrice > 0 ? (delta / set.purchasePrice) * 100 : null };
 }
 
+/** Built sets are assumed to keep 40% of their MRP until the owner says otherwise. */
+export const BUILT_VALUE_SHARE = 0.4;
+
+export const builtEstimate = (mrp: Paise): Paise => Math.round((mrp * BUILT_VALUE_SHARE) / 100) * 100;
+
 export function pricePerPieceOf(set: LegoSet): Paise | null {
   if (set.purchasePrice == null || !set.pieces) return null;
   return Math.round(set.purchasePrice / set.pieces);
