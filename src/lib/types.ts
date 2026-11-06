@@ -30,8 +30,6 @@ export interface SetEvent {
 export interface LegoSet {
   id: string;
   kind?: ItemKind;
-  /** Box price the owner typed in. Never counted as spending or value. */
-  mrp?: Paise | null;
   name: string;
   setNumber: string;
   themeId: string;
@@ -119,7 +117,6 @@ export interface WishItem {
 /** What the add/edit form hands to the store. */
 export interface SetInput {
   kind?: ItemKind;
-  mrp?: Paise | null;
   name: string;
   setNumber: string;
   themeId: string;

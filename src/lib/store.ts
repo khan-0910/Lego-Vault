@@ -98,7 +98,6 @@ const FIELD_NAMES: Partial<Record<keyof SetInput, string>> = {
   setNumber: "set number",
   themeId: "theme",
   pieces: "piece count",
-  mrp: "MRP",
   purchaseDate: "purchase date",
   seller: "seller",
   notes: "notes",
@@ -120,7 +119,7 @@ function diffEvents(prev: LegoSet, next: SetInput): SetEvent[] {
     );
   const added = next.photoIds.filter((p) => !prev.photoIds.includes(p)).length;
   if (added) events.push(ev("photo", `Added ${added} photo${added > 1 ? "s" : ""}`));
-  const changed = (Object.keys(FIELD_NAMES) as Array<keyof SetInput>).filter((k) => (prev[k] ?? null) !== (next[k] ?? null));
+  const changed = (Object.keys(FIELD_NAMES) as Array<keyof SetInput>).filter((k) => prev[k] !== next[k]);
   if (changed.length) events.push(ev("edited", `Edited ${changed.map((k) => FIELD_NAMES[k]).join(", ")}`));
   return events;
 }

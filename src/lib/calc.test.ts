@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { builtEstimate, computeRealised, computeStats, DEFAULT_FILTERS, filterSets, gainOf, leaderboard, monthlySeries, niceMax, sortSets } from "./calc";
+import { computeRealised, computeStats, DEFAULT_FILTERS, filterSets, gainOf, leaderboard, monthlySeries, niceMax, sortSets } from "./calc";
 import { csvToSets, parseCSV, setsToCSV } from "./csv";
 import { compactINR, formatINR, formatPct, parseINR } from "./money";
 import type { LegoSet, Theme } from "./types";
@@ -29,14 +29,6 @@ const set = (p: Partial<LegoSet>): LegoSet => ({
   createdAt: `2026-01-0${n % 9}T00:00:00Z`,
   updatedAt: "",
   ...p,
-});
-
-describe("builtEstimate", () => {
-  it("keeps 40% of the MRP, in whole rupees", () => {
-    expect(builtEstimate(10_000_00)).toBe(4_000_00);
-    expect(builtEstimate(2_599_00)).toBe(1_040_00);
-    expect(builtEstimate(1_999_00)).toBe(800_00);
-  });
 });
 
 describe("money", () => {

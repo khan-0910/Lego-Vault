@@ -17,7 +17,6 @@ export const CSV_COLUMNS = [
   "sale_date",
   "notes",
   "type",
-  "mrp_inr",
 ] as const;
 
 function cell(v: string | number | null | undefined): string {
@@ -46,7 +45,6 @@ export function setsToCSV(sets: LegoSet[], themes: Map<string, Theme>): string {
         s.saleDate,
         s.notes,
         s.kind ?? "set",
-        paiseToInput(s.mrp ?? null),
       ]
         .map(cell)
         .join(","),
@@ -116,8 +114,6 @@ const ALIASES: Record<string, (typeof CSV_COLUMNS)[number]> = {
   notes: "notes",
   type: "type",
   kind: "type",
-  mrp: "mrp_inr",
-  mrp_inr: "mrp_inr",
 };
 
 const CONDITIONS: Condition[] = ["sealed", "opened", "built", "used", "incomplete"];
@@ -149,8 +145,6 @@ export function csvToSets(text: string): CSVImport {
     if (!price.ok) problems.push(`price: ${price.error}`);
     const value = parseINR(get("estimated_value_inr"));
     if (!value.ok) problems.push(`value: ${value.error}`);
-    const mrp = parseINR(get("mrp_inr"));
-    if (!mrp.ok) problems.push(`mrp: ${mrp.error}`);
     const piecesRaw = get("pieces").replace(/,/g, "");
     const pieces = piecesRaw ? Number(piecesRaw) : null;
     if (pieces != null && (!Number.isInteger(pieces) || pieces < 0 || pieces > 100_000)) problems.push("pieces must be a whole number");
@@ -164,7 +158,6 @@ export function csvToSets(text: string): CSVImport {
     }
     rows.push({
       kind: /^(mini)?fig/i.test(get("type")) ? "minifig" : "set",
-      mrp: mrp.ok ? mrp.value : null,
       name: name.slice(0, 120),
       setNumber: get("set_number").slice(0, 24),
       themeName: get("theme") || "Unsorted",
