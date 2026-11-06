@@ -6,4 +6,4 @@
 :HL["/Lego-Vault/_next/static/media/9a321a2c78eff0b5-s.p.1bkzbscqrt8rl.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"value","h":96,"c":"$Q2"}]]
-0:{"b":"klbjxqwQDeuemZ4XjQxMI","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"RYNkkCYu2rmFRnHJLFLAK","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
