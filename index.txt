@@ -1,12 +1,12 @@
 1:"$Sreact.fragment"
 2:"/Lego-Vault/_next/static/chunks/42onvq6nokjl2.js"
-3:"/Lego-Vault/_next/static/chunks/2kij1w519kfdi.js"
-4:"/Lego-Vault/_next/static/chunks/2bxq0y8blqcuw.js"
-5:"/Lego-Vault/_next/static/chunks/31tp1v79v906v.js"
-6:"/Lego-Vault/_next/static/chunks/3vwnxmvsq7ug-.js"
-7:"/Lego-Vault/_next/static/chunks/2un54vnhqwjka.js"
+3:"/Lego-Vault/_next/static/chunks/2bxq0y8blqcuw.js"
+4:"/Lego-Vault/_next/static/chunks/2e-ea063p5q_f.js"
+5:"/Lego-Vault/_next/static/chunks/3vwnxmvsq7ug-.js"
+6:"/Lego-Vault/_next/static/chunks/18z-neeoxw-5a.js"
+7:"/Lego-Vault/_next/static/chunks/3bcpmpx54--gw.js"
 8:"/Lego-Vault/_next/static/chunks/2ltetlbkkhbap.js"
-9:"/Lego-Vault/_next/static/chunks/18z-neeoxw-5a.js"
+9:"/Lego-Vault/_next/static/chunks/37ay-m9dky_nx.js"
 a:I[23429,["$2","$3","$4","$5","$6","$7","$8","$9"],"AppShell"]
 b:I[39756,["$2","$3","$4","$5","$6","$7","$8","$9"],"default"]
 c:"/Lego-Vault/_next/static/chunks/25u7o3ffvf2ll.js"
@@ -14,26 +14,27 @@ d:I[16868,["$2","$3","$4","$5","$6","$7","$8","$9","$c"],"default"]
 e:I[37457,["$2","$3","$4","$5","$6","$7","$8","$9"],"default"]
 f:I[22016,["$2","$3","$4","$5","$6","$7","$8","$9"],""]
 11:I[47257,["$2","$3","$4","$5","$6","$7","$8","$9"],"ClientPageRoot"]
-12:"/Lego-Vault/_next/static/chunks/2lpyitrq_v2qr.js"
-13:I[52683,["$2","$3","$4","$5","$6","$7","$8","$9","$12"],"default"]
-16:I[97367,["$2","$3","$4","$5","$6","$7","$8","$9"],"OutletBoundary"]
-17:"$Sreact.suspense"
-19:"ViewportBoundary"
-1a:I[97367,["$2","$3","$4","$5","$6","$7","$8","$9"],"$19"]
-1c:"MetadataBoundary"
-1d:I[97367,["$2","$3","$4","$5","$6","$7","$8","$9"],"$1c"]
-1f:I[68027,["$2","$3","$4","$5","$6","$7","$8","$9"],"default",1]
-:HL["/Lego-Vault/_next/static/chunks/01dik7xri-0wx.css","style"]
+12:"/Lego-Vault/_next/static/chunks/2q1h0rr21-cr7.js"
+13:"/Lego-Vault/_next/static/chunks/2mbjq9c664g7v.js"
+14:I[52683,["$2","$3","$4","$5","$6","$7","$8","$9","$12","$13"],"default"]
+17:I[97367,["$2","$3","$4","$5","$6","$7","$8","$9"],"OutletBoundary"]
+18:"$Sreact.suspense"
+1a:"ViewportBoundary"
+1b:I[97367,["$2","$3","$4","$5","$6","$7","$8","$9"],"$1a"]
+1d:"MetadataBoundary"
+1e:I[97367,["$2","$3","$4","$5","$6","$7","$8","$9"],"$1d"]
+20:I[68027,["$2","$3","$4","$5","$6","$7","$8","$9"],"default",1]
+:HL["/Lego-Vault/_next/static/chunks/1ub16g34qbqkt.css","style"]
 :HL["/Lego-Vault/_next/static/media/0fc967cca4b01637-s.p.12zymgsojk14i.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/Lego-Vault/_next/static/media/660acf689794c992-s.p.2_mbdogr7ni8i.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
-:HL["/Lego-Vault/_next/static/media/7537b8e624991356-s.p.2uhbf6d8p7zdb.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/Lego-Vault/_next/static/media/8056169c9d560660-s.p.41rroleoq1br7.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/Lego-Vault/_next/static/media/970716c43037f925-s.p.40gj5_xrkze6a.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/Lego-Vault/_next/static/media/9a321a2c78eff0b5-s.p.1bkzbscqrt8rl.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
-10:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":[["$","$L11",null,{"Component":"$13","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@14","$@15"]}}],[["$","script","script-0",{"src":"/Lego-Vault/_next/static/chunks/2lpyitrq_v2qr.js","async":true,"nonce":"$undefined"}]],["$","$L16",null,{"children":["$","$17",null,{"name":"Next.MetadataOutlet","children":"$@18"}]}]]}],"p":false,"v":null}}]]
-0:{"P":null,"c":["",""],"q":"","i":false,"t":{"t":{"s":"","h":528,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/Lego-Vault/_next/static/chunks/01dik7xri-0wx.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/Lego-Vault/_next/static/chunks/42onvq6nokjl2.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/Lego-Vault/_next/static/chunks/2kij1w519kfdi.js","async":true,"nonce":"$undefined"}],["$","script","script-2",{"src":"/Lego-Vault/_next/static/chunks/2bxq0y8blqcuw.js","async":true,"nonce":"$undefined"}],["$","script","script-3",{"src":"/Lego-Vault/_next/static/chunks/31tp1v79v906v.js","async":true,"nonce":"$undefined"}],["$","script","script-4",{"src":"/Lego-Vault/_next/static/chunks/3vwnxmvsq7ug-.js","async":true,"nonce":"$undefined"}],["$","script","script-5",{"src":"/Lego-Vault/_next/static/chunks/2un54vnhqwjka.js","async":true,"nonce":"$undefined"}],["$","script","script-6",{"src":"/Lego-Vault/_next/static/chunks/2ltetlbkkhbap.js","async":true,"nonce":"$undefined"}],["$","script","script-7",{"src":"/Lego-Vault/_next/static/chunks/18z-neeoxw-5a.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en-IN","className":"_5yEQVG_variable -le-5q_variable _5qyUdq_variable _0hKi6W_variable cj5hLW_variable","children":["$","body",null,{"children":["$","$La",null,{"children":["$","$Lb",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$Ld",null,{"children":["$","$Le",null,{}]}],"templateStyles":[],"templateScripts":[["$","script","script-0",{"src":"/Lego-Vault/_next/static/chunks/25u7o3ffvf2ll.js","async":true,"nonce":"$undefined"}]],"notFound":[["$","div",null,{"className":"mx-auto flex max-w-lg flex-col items-center gap-4 py-16 text-center","children":[["$","p",null,{"className":"sfx text-7xl","children":"WHOOPS!"}],["$","h1",null,{"className":"font-display text-3xl font-extrabold","children":"This page fell behind the sofa."}],["$","p",null,{"className":"text-ink/75","children":"Like that one 1×1 tile. It is not here."}],["$","$Lf",null,{"href":"/","className":"btn btn-yellow","children":"Back to HQ"}]]}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}]}]}]]}],"p":false,"v":null},"c":"$Q10"},"h":{"r":["$","$1","h",{"children":[null,["$","$L1a",null,{"children":"$L1b"}],["$","$L1d",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$17",null,{"name":"Next.Metadata","children":"$L1e"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$1f",[["$","link","0",{"rel":"stylesheet","href":"/Lego-Vault/_next/static/chunks/01dik7xri-0wx.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"qOytSc_cKkTncB4qvC6Ws"}
-14:{}
-15:"$10:0:1:d:r:props:children:0:props:serverProvidedParams:params"
-1b:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#FFF3E8"}]]
-20:I[27201,["$2","$3","$4","$5","$6","$7","$8","$9"],"IconMark"]
-18:null
-1e:[["$","title","0",{"children":"BRICKVAULT"}],["$","meta","1",{"name":"description","content":"Every brick has a story. Every set has a value. Track your LEGO collection and what it cost you."}],["$","link","2",{"rel":"icon","href":"/Lego-Vault/icon.svg?icon.45757u3yj_oat.svg","sizes":"any","type":"image/svg+xml"}],["$","$L20","3",{}]]
+10:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":[["$","$L11",null,{"Component":"$14","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@15","$@16"]}}],[["$","script","script-0",{"src":"/Lego-Vault/_next/static/chunks/2q1h0rr21-cr7.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/Lego-Vault/_next/static/chunks/2mbjq9c664g7v.js","async":true,"nonce":"$undefined"}]],["$","$L17",null,{"children":["$","$18",null,{"name":"Next.MetadataOutlet","children":"$@19"}]}]]}],"p":false,"v":null}}]]
+0:{"P":null,"c":["",""],"q":"","i":false,"t":{"t":{"s":"","h":528,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/Lego-Vault/_next/static/chunks/1ub16g34qbqkt.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/Lego-Vault/_next/static/chunks/42onvq6nokjl2.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/Lego-Vault/_next/static/chunks/2bxq0y8blqcuw.js","async":true,"nonce":"$undefined"}],["$","script","script-2",{"src":"/Lego-Vault/_next/static/chunks/2e-ea063p5q_f.js","async":true,"nonce":"$undefined"}],["$","script","script-3",{"src":"/Lego-Vault/_next/static/chunks/3vwnxmvsq7ug-.js","async":true,"nonce":"$undefined"}],["$","script","script-4",{"src":"/Lego-Vault/_next/static/chunks/18z-neeoxw-5a.js","async":true,"nonce":"$undefined"}],["$","script","script-5",{"src":"/Lego-Vault/_next/static/chunks/3bcpmpx54--gw.js","async":true,"nonce":"$undefined"}],["$","script","script-6",{"src":"/Lego-Vault/_next/static/chunks/2ltetlbkkhbap.js","async":true,"nonce":"$undefined"}],["$","script","script-7",{"src":"/Lego-Vault/_next/static/chunks/37ay-m9dky_nx.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en-IN","className":"_5yEQVG_variable -le-5q_variable _5qyUdq_variable _0hKi6W_variable cj5hLW_variable","children":["$","body",null,{"children":["$","$La",null,{"children":["$","$Lb",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$Ld",null,{"children":["$","$Le",null,{}]}],"templateStyles":[],"templateScripts":[["$","script","script-0",{"src":"/Lego-Vault/_next/static/chunks/25u7o3ffvf2ll.js","async":true,"nonce":"$undefined"}]],"notFound":[["$","div",null,{"className":"mx-auto flex max-w-lg flex-col items-center gap-4 py-16 text-center","children":[["$","p",null,{"className":"sfx text-7xl","children":"WHOOPS!"}],["$","h1",null,{"className":"font-display text-3xl font-extrabold","children":"This page fell behind the sofa."}],["$","p",null,{"className":"text-ink/75","children":"Like that one 1×1 tile. It is not here."}],["$","$Lf",null,{"href":"/","className":"btn btn-yellow","children":"Back to HQ"}]]}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}]}]}]]}],"p":false,"v":null},"c":"$Q10"},"h":{"r":["$","$1","h",{"children":[null,["$","$L1b",null,{"children":"$L1c"}],["$","$L1e",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$18",null,{"name":"Next.Metadata","children":"$L1f"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$20",[["$","link","0",{"rel":"stylesheet","href":"/Lego-Vault/_next/static/chunks/1ub16g34qbqkt.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"6NoXiCsJjR7gXRbTPprQc"}
+15:{}
+16:"$10:0:1:d:r:props:children:0:props:serverProvidedParams:params"
+1c:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#FFF3E8"}]]
+21:I[27201,["$2","$3","$4","$5","$6","$7","$8","$9"],"IconMark"]
+19:null
+1f:[["$","title","0",{"children":"BRICKVAULT"}],["$","meta","1",{"name":"description","content":"Every brick has a story. Every set has a value. Track your LEGO collection and what it cost you."}],["$","link","2",{"rel":"icon","href":"/Lego-Vault/icon.svg?icon.45757u3yj_oat.svg","sizes":"any","type":"image/svg+xml"}],["$","$L21","3",{}]]

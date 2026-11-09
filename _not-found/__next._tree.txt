@@ -1,4 +1,4 @@
-:HL["/Lego-Vault/_next/static/chunks/01dik7xri-0wx.css","style"]
+:HL["/Lego-Vault/_next/static/chunks/1ub16g34qbqkt.css","style"]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"/_not-found","h":96,"c":"$Q2"}]]
-0:{"b":"qOytSc_cKkTncB4qvC6Ws","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"6NoXiCsJjR7gXRbTPprQc","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
