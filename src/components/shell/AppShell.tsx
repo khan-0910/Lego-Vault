@@ -14,12 +14,17 @@ import { Logo } from "@/components/ui/Logo";
 import { BrickLoader } from "@/components/ui/States";
 import { Toasts } from "@/components/ui/Toasts";
 import { computeStats, inScope } from "@/lib/calc";
-import { useVaultHydration } from "@/lib/hooks";
+import { useMotionAllowed, useVaultHydration } from "@/lib/hooks";
 import { compactINR, formatINR } from "@/lib/money";
 import { useVault } from "@/lib/store";
 import { useUI } from "@/lib/ui";
 import { cn } from "@/lib/utils";
+import ClickSpark from "@/components/bits/ClickSpark";
 import { CommandPalette } from "./CommandPalette";
+import { SmoothScroll } from "./SmoothScroll";
+
+/** Click sparks in brick colours. */
+const SPARKS = ["#FF5C6C", "#FFD447", "#4062FF", "#2FCB8A", "#A77BFF", "#62D2FF"];
 
 export const NAV = [
   { href: "/", label: "HQ", Icon: House },
@@ -36,6 +41,7 @@ const isActive = (path: string, href: string) => (href === "/" ? path === "/" : 
 export function AppShell({ children }: { children: ReactNode }) {
   const ready = useVaultHydration();
   const motionPref = useVault((s) => s.prefs.motion);
+  const motionOK = useMotionAllowed();
   const setPalette = useUI((s) => s.setPalette);
   const openAdd = useUI((s) => s.openAdd);
 
@@ -60,6 +66,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <MotionConfig reducedMotion={motionPref === "reduced" ? "always" : motionPref === "full" ? "never" : "user"}>
+      <SmoothScroll />
+      <ClickSpark sparkColor={SPARKS} shape="star" sparkCount={9} sparkSize={11} sparkRadius={26} duration={520} easing="spring" gravity={0.35} disabled={!motionOK}>
       <Backdrop />
       <ScrollBrickBar />
       <a href="#main" className="skip-link btn btn-yellow">
@@ -75,6 +83,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {ready && <SetFormModal />}
       {ready && <CommandPalette />}
       <Toasts />
+      </ClickSpark>
     </MotionConfig>
   );
 }

@@ -36,6 +36,7 @@ Live site: https://khan-0910.github.io/Lego-Vault/ . Every push to `main` and a 
 - **Wishlist** – target price, priority, link, notes. **Got it!** moves an item into the vault with the details filled in. Wishlist prices never count as spending.
 - **Themes** – type any theme when adding a set; common LEGO themes are suggestions only. Restyle (colour, print pattern, icon), merge duplicates, delete with reassignment.
 - **Data** – JSON backup (optionally with photos), restore (merge or replace), CSV export, CSV import with per-row errors, demo data on/off, motion preference, erase everything.
+- **Motion** – [Lenis](https://github.com/darkroomengineering/lenis) smooth scrolling driven by GSAP's ticker; GSAP ScrollTrigger scenes: an instruction-booklet build of the vault that assembles step by step as you scroll, and an assembly line that carries your sets past on a conveyor. [React Bits](https://reactbits.dev) pieces in `src/components/bits`: click sparks, a scroll-speed ticker, magnetic buttons and a springy baseplate of studs. All of it turns off with reduced motion.
 - **Everywhere** – `Ctrl/Cmd + K` command palette, `N` to add a set, toasts with undo, mobile bottom bar, reduced-motion support.
 
 ### How the money works

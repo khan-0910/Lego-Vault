@@ -8,8 +8,12 @@ import { GainMeter, StatTile } from "@/components/charts/Boards";
 import { Delta } from "@/components/sets/SetBits";
 import { SetCard } from "@/components/sets/SetCard";
 import { CountUp } from "@/components/ui/CountUp";
-import { DoodleArrow, Marquee, Sparkle, Squiggle, Starburst, Studs } from "@/components/ui/Decor";
+import { DoodleArrow, Sparkle, Squiggle, Starburst, Studs } from "@/components/ui/Decor";
+import Magnet from "@/components/bits/Magnet";
 import { BrickNews } from "@/components/catalog/BrickNews";
+import { AssemblyLine } from "@/components/lego/AssemblyLine";
+import { InstructionManual } from "@/components/lego/InstructionManual";
+import { Ticker } from "@/components/lego/Ticker";
 import { Minibuild } from "@/components/lego/Minibuild";
 import { Minifig } from "@/components/lego/Minifig";
 import { BrickBurst, BrickDivider, ComicStory, ScrollTitle, type StoryPanel, ThemeTower, type TowerLayer } from "@/components/lego/ScrollScenes";
@@ -43,6 +47,11 @@ function HQ() {
   const stats = useMemo(() => computeStats(owned), [owned]);
   const lifetime = useMemo(() => computeStats(sets).totalSpent, [sets]);
   const recent = useMemo(() => [...owned].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 4), [owned]);
+  // The latest 16 sets, told oldest to newest along the belt.
+  const line = useMemo(
+    () => [...owned].sort((a, b) => (a.purchaseDate ?? a.createdAt).localeCompare(b.purchaseDate ?? b.createdAt)).slice(-16),
+    [owned],
+  );
   const wishTotal = wishlist.reduce((s, w) => s + (w.targetPrice ?? 0), 0);
   const [burst, setBurst] = useState(0);
   const topTheme = stats.topTheme ? get(stats.topTheme.themeId) : null;
@@ -162,9 +171,11 @@ function HQ() {
               {lifetime !== stats.totalSpent && <span className="block text-sm font-medium opacity-80">Lifetime, including sold sets: {formatINR(lifetime)}</span>}
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <button type="button" className="btn btn-yellow" onClick={() => openAdd()}>
-                <Plus size={18} strokeWidth={3} /> Add a set
-              </button>
+              <Magnet padding={70} magnetStrength={3} tilt={6}>
+                <button type="button" className="btn btn-yellow" onClick={() => openAdd()}>
+                  <Plus size={18} strokeWidth={3} /> Add a set
+                </button>
+              </Magnet>
               <Link href="/value" className="btn bg-paper">
                 <Gauge size={18} strokeWidth={2.8} /> Value tracker
               </Link>
@@ -214,7 +225,7 @@ function HQ() {
 
       {/* ── Ticker ── */}
       <div className="-mx-4 -rotate-1 border-y-[3px] border-ink bg-ink py-2.5 text-yellow sm:-mx-6 lg:-mx-8" aria-hidden>
-        <Marquee>
+        <Ticker>
           {[
             `${formatINR(stats.totalSpent)} spent`,
             `${formatNumber(stats.setCount)} sets`,
@@ -230,7 +241,7 @@ function HQ() {
                 {t} <Sparkle className="h-5 w-5" />
               </span>
             ))}
-        </Marquee>
+        </Ticker>
       </div>
 
       {/* ── Stat tiles ── */}
@@ -346,7 +357,20 @@ function HQ() {
       {tower.length >= 2 && <ThemeTower layers={tower} total={formatINR(stats.totalSpent)} />}
 
       {/* ── Recently added ── */}
-      {recent.length > 0 && (
+      {line.length >= 3 ? (
+        <section aria-labelledby="line-title" className="relative">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <ScrollTitle id="line-title" text="The assembly line" className="text-3xl sm:text-4xl" />
+              <p className="mt-1 text-ink/70">Your sets in the order you got them. Keep scrolling to run the belt.</p>
+            </div>
+            <Link href="/collection" className="btn btn-sm">
+              Whole vault <ArrowRight size={16} strokeWidth={3} />
+            </Link>
+          </div>
+          <AssemblyLine sets={line} theme={get} />
+        </section>
+      ) : recent.length > 0 && (
         <section aria-labelledby="recent-title" className="relative">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <ScrollTitle id="recent-title" text="Fresh off the shelf" className="text-3xl sm:text-4xl" />
@@ -361,6 +385,8 @@ function HQ() {
           </div>
         </section>
       )}
+
+      <InstructionManual outro={<p className="text-sm text-ink/70">Every set in your vault started as a bag of bricks and a booklet like this one.</p>} />
 
       <BrickBurst word="KRAK!" />
 
@@ -472,9 +498,11 @@ function FirstRun() {
             Log each set with what you paid and what you think it is worth. BRICKVAULT adds up your spending by theme, month and set, and keeps a history for every box.
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }} className="mt-7 flex flex-wrap gap-3">
-            <button type="button" className="btn btn-red btn-lg" onClick={() => openAdd()}>
-              <Plus size={20} strokeWidth={3} /> Add your first set
-            </button>
+            <Magnet padding={80} magnetStrength={3} tilt={6}>
+              <button type="button" className="btn btn-red btn-lg" onClick={() => openAdd()}>
+                <Plus size={20} strokeWidth={3} /> Add your first set
+              </button>
+            </Magnet>
             <button
               type="button"
               className="btn btn-lg"
@@ -510,6 +538,25 @@ function FirstRun() {
           </Starburst>
         </motion.div>
       </section>
+
+      <div className="-mx-4 my-6 rotate-1 border-y-[3px] border-ink bg-yellow py-3 sm:-mx-6 lg:-mx-8" aria-hidden>
+        <Ticker velocity={70}>
+          {["Every brick has a story", "Every set has a value", "Built in India", "Snap · Click · Clack"].map((t) => (
+            <span key={t} className="flex items-center gap-10 font-display text-2xl font-extrabold uppercase tracking-wide sm:text-3xl">
+              {t} <Sparkle className="h-6 w-6" color="#FF5C6C" />
+            </span>
+          ))}
+        </Ticker>
+      </div>
+
+      <InstructionManual
+        title="Your first build"
+        outro={
+          <button type="button" className="btn btn-red w-full" onClick={() => openAdd()}>
+            <Plus size={18} strokeWidth={3} /> Now add a real one
+          </button>
+        }
+      />
 
       <BrickBurst word="BUILD!" />
 

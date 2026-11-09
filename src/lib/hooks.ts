@@ -68,3 +68,10 @@ export function useMediaQuery(query: string): boolean {
   }, [query]);
   return match;
 }
+
+/** Decorative motion is on: the user's setting, falling back to the system preference. */
+export function useMotionAllowed(): boolean {
+  const pref = useVault((s) => s.prefs.motion);
+  const reduce = useMediaQuery("(prefers-reduced-motion: reduce)");
+  return pref === "full" || (pref === "system" && !reduce);
+}
