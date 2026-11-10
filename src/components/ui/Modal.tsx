@@ -139,7 +139,7 @@ export function ConfirmDialog({
   tone?: string;
 }) {
   return (
-    <Modal open={open} onClose={onClose} title={title} size="sm" tone={tone} eyebrow="Hold up!">
+    <Modal open={open} onClose={onClose} title={title} size="sm" tone={tone} eyebrow="Hold up">
       <div className="space-y-5 p-5">
         <div className="text-[0.98rem] leading-relaxed">{body}</div>
         <div className="flex flex-wrap justify-end gap-3">

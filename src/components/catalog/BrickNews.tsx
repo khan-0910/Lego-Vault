@@ -118,7 +118,7 @@ function FunFact({ facts, className }: { facts: Highlights["facts"]; className?:
       transition={popIn(0.25, 0.7)}
       className={cn("panel relative flex flex-col overflow-hidden bg-yellow p-5 pt-20", className)}
     >
-      <div className="speedlines pointer-events-none absolute -inset-[40%] animate-spin-slow opacity-40" aria-hidden />
+      <div className="speedlines pointer-events-none absolute -inset-[40%] opacity-40" aria-hidden />
       <Starburst className="absolute -left-3 -top-5 h-28 w-28 -rotate-12" fill="#FF5C6C" points={12}>
         <span className="sfx block text-[0.8rem] leading-none text-paper">DID YOU KNOW?</span>
       </Starburst>
@@ -201,7 +201,7 @@ function ComingSoon({ data }: { data: Highlights }) {
           See them all
         </Link>
       </div>
-      {current.value === "fresh" && <p className="mono-meta text-[0.62rem] text-ink/60">Sets that appeared in the catalog in the last few months, newest first.</p>}
+      {current.value === "fresh" && <p className="mono-meta text-[0.62rem] text-ink/60">Sets that appeared in the catalog in the last few months, newest first</p>}
     </div>
   );
 }

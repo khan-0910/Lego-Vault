@@ -105,8 +105,6 @@
     z-index: -1;
     pointer-events: none;
     background:
-      radial-gradient(circle at 12% 8%, rgb(255 92 108 / 0.1), transparent 34%),
-      radial-gradient(circle at 92% 88%, rgb(64 98 255 / 0.1), transparent 36%),
       radial-gradient(rgb(42 31 69 / 0.075) 1.1px, transparent 1.5px) 0 0 / 14px 14px,
       var(--color-cream);
   }
@@ -244,10 +242,9 @@
   .field-label {
     display: block;
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
     margin-bottom: 0.4rem;
   }
 
@@ -275,10 +272,9 @@
 
   .mono-meta {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
   }
 
   /* Spider-Verse style misregistered print: red and blue plates slightly off. */
@@ -434,11 +430,9 @@
     border: 2.5px solid var(--color-ink);
     padding: 0.25rem 0.65rem;
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 700;
-    font-style: italic;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
     box-shadow: 3px 3px 0 0 var(--color-ink);
     transform: rotate(-1.5deg);
   }

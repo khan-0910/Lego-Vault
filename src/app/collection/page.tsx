@@ -84,7 +84,7 @@ function Collection() {
         accent="#FFD447"
         build="house"
         fig={{ torso: "#4062FF", legs: "#FFD447", print: "brick", hat: "hair", hatColor: "#8A5A2B" }}
-        subtitle="Search by name or set number, filter by theme, condition, date or price, and sort however you like."
+        subtitle="Search by name or set number, filter by theme, condition, date or price, and sort however you like"
         actions={
           <>
             <button

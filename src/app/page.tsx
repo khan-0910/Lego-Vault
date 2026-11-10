@@ -25,7 +25,7 @@ import { ThemeIcon } from "@/components/ui/ThemeIcon";
 import { computeStats, inScope, itemsLabel } from "@/lib/calc";
 import { buildDemo } from "@/lib/demo";
 import { useThemes } from "@/lib/hooks";
-import { compactINR, formatINR, formatNumber, formatPct } from "@/lib/money";
+import { formatINR, formatNumber, formatPct } from "@/lib/money";
 import { useVault } from "@/lib/store";
 import { toast, useUI } from "@/lib/ui";
 import { formatDate, pluralise } from "@/lib/utils";
@@ -134,7 +134,7 @@ function HQ() {
           transition={popIn(0.35, 0.8)}
           className="panel relative overflow-hidden bg-red px-5 pb-6 pt-5 sm:px-8 sm:pb-8 lg:col-span-7"
         >
-          <div className="speedlines pointer-events-none absolute -inset-[40%] animate-spin-slow opacity-70" aria-hidden />
+          <div className="speedlines pointer-events-none absolute -inset-[40%] opacity-70" aria-hidden />
           <div className="halftone-fade pointer-events-none absolute inset-0" aria-hidden />
           <div className="relative">
             <p className="label-tab bg-paper">
@@ -167,7 +167,7 @@ function HQ() {
               )}
             </div>
             <p className="mt-3 max-w-lg text-[1.02rem] font-semibold leading-snug">
-              Across {itemsLabel(stats.count, stats.figCount)}, {pluralise(stats.totalPieces, "piece")} in your vault.
+              Across {itemsLabel(stats.count, stats.figCount)}, {pluralise(stats.totalPieces, "piece")} in your vault
               {lifetime !== stats.totalSpent && <span className="block text-sm font-medium opacity-80">Lifetime, including sold sets: {formatINR(lifetime)}</span>}
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
@@ -197,7 +197,7 @@ function HQ() {
             <div>
               <CountUp value={stats.estValue} money memoryKey="hq-value" className="block font-display text-4xl font-extrabold tracking-tight sm:text-5xl" />
               <p className="mt-1 text-sm text-ink/70">
-                Your estimates for {stats.valuedCount} of {itemsLabel(stats.count, stats.figCount)}.
+                Your estimates for {stats.valuedCount} of {itemsLabel(stats.count, stats.figCount)}
               </p>
             </div>
             {stats.unrealised != null && <Delta delta={stats.unrealised} pct={stats.returnPct} showLabel />}
@@ -386,7 +386,7 @@ function HQ() {
         </section>
       )}
 
-      <InstructionManual outro={<p className="text-sm text-ink/70">Every set in your vault started as a bag of bricks and a booklet like this one.</p>} />
+      <InstructionManual outro={<p className="text-sm text-ink/70">Every set in your vault started as a bag of bricks and a booklet like this one</p>} />
 
       <BrickBurst word="KRAK!" />
 
@@ -442,7 +442,7 @@ function RecordCard({
           <p className="line-clamp-1 font-display text-xl font-extrabold leading-tight">{title}</p>
           {extra && <p className="text-sm text-ink/70">{extra}</p>}
         </div>
-        <p className="shrink-0 font-display text-2xl font-extrabold">{amount != null ? compactINR(amount) : "—"}</p>
+        <p className="shrink-0 font-display text-2xl font-extrabold">{amount != null ? formatINR(amount) : "—"}</p>
       </div>
     </>
   );
@@ -467,9 +467,9 @@ function FirstRun() {
           <motion.p
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="mb-4 inline-flex rounded-full border-[2.5px] border-ink bg-yellow px-3 py-1 font-mono text-xs font-bold uppercase tracking-[0.14em]"
+            className="mb-4 inline-flex rounded-full border-[2.5px] border-ink bg-yellow px-3 py-1 font-mono text-xs font-semibold"
           >
-            Welcome to your LEGO command centre
+            LEGO collection tracker
           </motion.p>
           <h1 className="font-display text-5xl font-extrabold uppercase leading-[0.9] tracking-tight sm:text-7xl">
             {words.map((w, i) => (
@@ -525,7 +525,7 @@ function FirstRun() {
           className="relative"
         >
           <div className="panel relative overflow-hidden bg-sky p-6 sm:p-10">
-            <div className="speedlines pointer-events-none absolute -inset-[40%] animate-spin-slow" aria-hidden />
+            <div className="speedlines pointer-events-none absolute -inset-[40%]" aria-hidden />
             <div className="relative mx-auto flex max-w-md items-end justify-center gap-1 pt-6">
               <Minifig wave print="rupee" torso="#FF5C6C" legs="#2A1F45" hat="hair" hatColor="#8A5A2B" className="h-36 w-24" />
               <Minibuild name="house" className="h-56 w-auto" delay={0.8} />

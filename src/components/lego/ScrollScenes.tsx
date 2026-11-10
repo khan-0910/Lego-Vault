@@ -189,7 +189,7 @@ export function ThemeTower({ layers, total }: { layers: TowerLayer[]; total: str
                     </>
                   ) : (
                     <>
-                      <p className="font-display text-xl uppercase sm:text-2xl">Scroll to stack!</p>
+                      <p className="font-display text-xl uppercase sm:text-2xl">Scroll to stack</p>
                       <p className="mt-1 text-sm text-ink/75">Every theme you spend on becomes a brick. The more you spent, the wider the brick.</p>
                     </>
                   )}

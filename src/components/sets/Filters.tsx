@@ -132,7 +132,7 @@ export function FilterBar({
         <span className="mx-1 hidden h-6 w-[2px] bg-ink/20 sm:block" aria-hidden />
         <Popover label="Themes" count={filters.themeIds.length}>
           {themes.length === 0 ? (
-            <p className="text-sm">No themes yet.</p>
+            <p className="text-sm">No themes yet</p>
           ) : (
             <ul className="scroll-comic max-h-64 space-y-1 overflow-y-auto" role="group" aria-label="Filter by theme">
               {themes.map((t) => {
@@ -199,7 +199,7 @@ export function FilterBar({
               </Field>
             </div>
           )}
-          <p className="mt-2 text-xs text-ink/60">Sets without a purchase date are hidden while a date filter is on.</p>
+          <p className="mt-2 text-xs text-ink/60">Sets without a purchase date are hidden while a date filter is on</p>
         </Popover>
         {showPrice && (
           <Popover label="Price" count={filters.minPrice != null || filters.maxPrice != null ? 1 : 0} align="right">

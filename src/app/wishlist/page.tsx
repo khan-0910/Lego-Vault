@@ -60,7 +60,7 @@ function Wishlist() {
         accent="#FF9FD0"
         build="rocket"
         fig={{ torso: "#FF9FD0", legs: "#A77BFF", print: "star", mood: "wow", hat: "hair", hatColor: "#2A1F45" }}
-        subtitle="Sets you are after. Wishlist prices never count as spending. When you buy one, hit “Got it!” and it moves into the vault."
+        subtitle="Sets you are after. Wishlist prices never count as spending. When you buy one, hit “Got it” and it moves into the vault."
         actions={
           <button type="button" className="btn btn-red" onClick={() => setEditing("new")}>
             <Plus size={18} strokeWidth={3} /> Add to wishlist
@@ -139,7 +139,7 @@ function Wishlist() {
                     </div>
                     <div className="flex flex-wrap gap-2 border-t-[3px] border-ink bg-cream p-3">
                       <button type="button" className="btn btn-sm btn-mint" onClick={() => openAdd({ name: w.name, setNumber: w.setNumber, themeId: w.themeId, purchasePrice: w.targetPrice }, w.id)}>
-                        <PartyPopper size={15} strokeWidth={2.8} /> Got it!
+                        <PartyPopper size={15} strokeWidth={2.8} /> Got it
                       </button>
                       <button type="button" className="btn btn-sm" onClick={() => setEditing(w)} aria-label={`Edit ${w.name}`}>
                         <Pencil size={15} strokeWidth={2.8} />

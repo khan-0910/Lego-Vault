@@ -106,7 +106,7 @@ export function PageHeader({
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={popIn(0.3, 0.5)}
-            className="mb-3 inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink px-3 py-1 font-mono text-[0.72rem] font-bold uppercase tracking-[0.14em]"
+            className="mb-3 inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink px-3 py-1 font-mono text-xs font-semibold"
             style={{ background: accent, color: "#2A1F45" }}
           >
             {kicker}

@@ -124,7 +124,7 @@ export default function SettingsPage() {
                 <p className="flex items-center gap-2 font-display font-extrabold">
                   <FileBraces size={18} strokeWidth={2.6} aria-hidden /> Full backup (.json)
                 </p>
-                <p className="text-sm text-ink/70">Everything, ready to restore here or on another device.</p>
+                <p className="text-sm text-ink/70">Everything, ready to restore here or on another device</p>
                 <label className="mt-2 flex items-center gap-2 text-sm font-semibold">
                   <input type="checkbox" checked={withPhotos} onChange={(e) => setWithPhotos(e.target.checked)} className="h-4 w-4 accent-[#2A1F45]" />
                   Include photos (bigger file)
@@ -150,7 +150,7 @@ export default function SettingsPage() {
 
         <Panel label="Import" labelTone="#FF9FD0" labelIcon={<Upload size={14} strokeWidth={3} aria-hidden />}>
           <div className="space-y-4">
-            <FilePick label="Restore a backup" hint="A .json file exported from BRICKVAULT." accept="application/json,.json" onFile={readBackup} />
+            <FilePick label="Restore a backup" hint="A .json file exported from BRICKVAULT" accept="application/json,.json" onFile={readBackup} />
             <FilePick
               label="Import sets from CSV"
               hint={

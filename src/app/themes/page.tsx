@@ -364,7 +364,7 @@ function DeleteDialog({ theme, onClose }: { theme: Theme | null; onClose: () => 
   const wishCount = theme ? wishlist.filter((w) => w.themeId === theme.id).length : 0;
   const needsMove = setCount > 0;
   return (
-    <Modal open={theme != null} onClose={onClose} title={`Delete ${theme?.name ?? ""}?`} eyebrow="Hold up!" tone="#FF5C6C" size="sm">
+    <Modal open={theme != null} onClose={onClose} title={`Delete ${theme?.name ?? ""}?`} eyebrow="Hold up" tone="#FF5C6C" size="sm">
       <form
         className="space-y-4 p-5"
         onSubmit={(e) => {
@@ -382,7 +382,7 @@ function DeleteDialog({ theme, onClose }: { theme: Theme | null; onClose: () => 
               <strong>{theme?.name}</strong> still holds {pluralise(setCount, "set")}. Sets always need a theme, so pick where they should go.
             </p>
             {others.length === 0 ? (
-              <p className="rounded-lg border-2 border-ink bg-yellow px-3 py-2 text-sm font-semibold">Create another theme first, then delete this one.</p>
+              <p className="rounded-lg border-2 border-ink bg-yellow px-3 py-2 text-sm font-semibold">Create another theme first, then delete this one</p>
             ) : (
               <Field label="Move sets to">
                 {({ id }) => (

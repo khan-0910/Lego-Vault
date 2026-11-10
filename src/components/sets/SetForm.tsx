@@ -375,7 +375,7 @@ function SetFormBody({
 
       {restored && (
         <div className="mx-4 mt-4 flex items-center gap-3 rounded-lg border-2 border-dashed border-ink bg-yellow/40 px-3 py-2 text-sm sm:mx-5">
-          <span className="font-semibold">Picked up your unsaved draft.</span>
+          <span className="font-semibold">Picked up your unsaved draft</span>
           <button type="button" className="btn btn-sm ml-auto bg-paper" onClick={discardDraft}>
             <RotateCcw size={14} strokeWidth={3} /> Start fresh
           </button>
@@ -408,7 +408,7 @@ function SetFormBody({
                 <Field
                   label={fig ? "Minifigure name" : "Set name"}
                   error={err("name")}
-                  hint={fig ? "Start typing and pick from every LEGO minifigure, or type your own." : "Start typing and pick from every LEGO set, or type your own."}
+                  hint={fig ? "Start typing and pick from every LEGO minifigure, or type your own" : "Start typing and pick from every LEGO set, or type your own"}
                 >
                   {({ id, describedBy, invalid }) => (
                     <NamePicker
@@ -424,7 +424,7 @@ function SetFormBody({
                     />
                   )}
                 </Field>
-                <Field label="Theme" error={err("theme")} hint="Pick one of yours, a common LEGO theme, or type your own.">
+                <Field label="Theme" error={err("theme")} hint="Pick one of yours, a common LEGO theme, or type your own">
                   {({ id, describedBy, invalid }) => (
                     <ThemeCombobox id={id} value={draft.theme} onChange={(v) => setDraft((d) => ({ ...d, theme: v, themeAuto: false }))} describedBy={describedBy} invalid={invalid} />
                   )}

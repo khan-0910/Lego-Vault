@@ -418,7 +418,7 @@ const EVENT_STYLE: Record<SetEvent["type"], { Icon: typeof Plus; bg: string }> =
 
 function HistoryList({ events }: { events: SetEvent[] }) {
   const sorted = [...events].sort((a, b) => b.at.localeCompare(a.at));
-  if (!sorted.length) return <p className="text-ink/70">No history yet.</p>;
+  if (!sorted.length) return <p className="text-ink/70">No history yet</p>;
   return (
     <ol className="relative ml-4 border-l-[3px] border-ink pl-7">
       {sorted.map((e, i) => {

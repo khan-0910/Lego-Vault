@@ -289,7 +289,7 @@ function ValueTracker() {
                     <h3 className="font-display text-lg font-extrabold uppercase">{monthLabel(month, true)}</h3>
                     <span className="font-display font-extrabold">{formatINR(monthSets.reduce((s, x) => s + (x.purchasePrice ?? 0), 0))}</span>
                   </div>
-                  {monthSets.length ? <SetMiniList sets={monthSets} theme={get} className="mt-2" /> : <p className="px-3 pb-3 pt-1 text-sm text-ink/70">Nothing bought this month.</p>}
+                  {monthSets.length ? <SetMiniList sets={monthSets} theme={get} className="mt-2" /> : <p className="px-3 pb-3 pt-1 text-sm text-ink/70">Nothing bought this month</p>}
                 </motion.div>
               ) : (
                 <motion.p key="hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mt-4 text-sm text-ink/65">
