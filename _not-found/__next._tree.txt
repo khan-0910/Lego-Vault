@@ -1,4 +1,4 @@
 :HL["/Lego-Vault/_next/static/chunks/1x77ldapcn6_y.css","style"]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"/_not-found","h":96,"c":"$Q2"}]]
-0:{"b":"XMAXpy49KDfClKrdMPwbV","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"nyeWD3sgq-5C91AsyHY10","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
