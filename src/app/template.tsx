@@ -13,9 +13,9 @@ export default function Template({ children }: { children: ReactNode }) {
     <>
       {!reduce && <Iris key={path} />}
       <motion.div
-        initial={reduce ? false : { scale: 1.06, opacity: 0.6 }}
+        initial={reduce ? false : { scale: 1.03, opacity: 0.6 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.9, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.45, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
       >
         {children}
       </motion.div>

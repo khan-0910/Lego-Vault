@@ -14,9 +14,9 @@ const COLORS = ["#FF5C6C", "#FFD447", "#4062FF", "#7BF1C8", "#FF9FD0", "#A77BFF"
 const BW = 104;
 const BH = 52;
 const HOLD_R = 120;
-const IRIS = 1.55; // seconds for the whole iris move
-const FALL_AT = 700; // ms when the bricks start to drop
-const DONE = 2000; // ms until the overlay unmounts
+const IRIS = 0.65; // seconds for the whole iris move
+const FALL_AT = 120; // ms when the bricks start to drop
+const DONE = 950; // ms until the overlay unmounts (last brick lands by about 900)
 
 function rand(seed: number) {
   const x = Math.sin(seed * 9301 + 49297) * 233280;
@@ -60,7 +60,7 @@ export function Iris() {
           top,
           z: rows - r,
           color: COLORS[Math.floor(rand(seed) * COLORS.length)],
-          delay: FALL_AT + dist * 480 + rand(seed + 3) * 110,
+          delay: FALL_AT + dist * 200 + rand(seed + 3) * 60,
           x: dx * (0.25 + rand(seed + 5) * 0.35),
           rot: (dx >= 0 ? 1 : -1) * (30 + rand(seed + 7) * 90),
         });
@@ -79,7 +79,7 @@ export function Iris() {
       aria-hidden
       initial={{ "--r": "0px" } as never}
       animate={{ "--r": ["0px", `${HOLD_R}px`, `${HOLD_R}px`, `${wall.full}px`] } as never}
-      transition={{ duration: IRIS, times: [0, 0.2, 0.45, 1], ease: ["backOut", "linear", "easeIn"] }}
+      transition={{ duration: IRIS, times: [0, 0.18, 0.32, 1], ease: ["backOut", "linear", "easeIn"] }}
     >
       <div className="iris-mask absolute inset-0">
         {wall.bricks.map((b) => (
