@@ -5,4 +5,4 @@
 :HL["/Lego-Vault/_next/static/media/970716c43037f925-s.p.40gj5_xrkze6a.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/Lego-Vault/_next/static/media/9a321a2c78eff0b5-s.p.1bkzbscqrt8rl.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 1:[["children",{"s":"__PAGE__","h":160}]]
-0:{"b":"4pfn1iuSixHn-R6boSkWT","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"vViIA4pjggXOVqy5oZ4Q5","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
